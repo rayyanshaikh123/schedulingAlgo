@@ -1,5 +1,27 @@
-.App {
-  text-align: center;
+*{
+  
+font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+ 
+}
+body{
+  background-color:  #F7EFE5;
+
+ 
+}
+.head{
+  color: #7743DB;
+}
+.form{
+
+  
+  box-shadow: 0px 0px 15px 1px rgba(240,240,240,1);
+  
+transition: all .5s;
+background-color: #FFFBF5  ;
+}
+.form:hover{
+
+  box-shadow: 0px 0px 15px 1px rgba(195,172,208,1);
 }
 
 .App-logo {
@@ -12,7 +34,11 @@
     animation: App-logo-spin infinite 20s linear;
   }
 }
+.header{
+font-family: 'Trebuchet MS', 'Lucida Sans Unicode', 'Lucida Grande', 'Lucida Sans', Arial, sans-serif;
 
+color: #7743DB;
+}
 .App-header {
   background-color: #282c34;
   min-height: 100vh;
@@ -22,6 +48,9 @@
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
+}
+sub{
+  font-size: 16px;
 }
 
 .App-link {
@@ -35,4 +64,37 @@
   to {
     transform: rotate(360deg);
   }
+}
+
+
+/* Add custom focus styles */
+.form-control:focus, 
+.form-select:focus {
+  outline: none;
+  box-shadow: 0 0 5px #7743DB; /* Adds a subtle shadow effect */
+  border-color: #7743DB; /* Changes the border color on focus */
+}
+
+.btn{
+  background-color: #7743DB;
+  color: #FFFBF5;
+}
+.btn:hover{
+  background-color: #6d42bc;
+  color: #FFFBF5;
+}
+
+
+/* App.css */
+.content {
+  opacity: 1;
+  transition: opacity 1s ease-in-out; /* Transition for fade effect */
+}
+
+.fade-out {
+  opacity: 0; /* Fades out the content */
+}
+
+.fade-in {
+  opacity: 1; /* Fades in the content */
 }

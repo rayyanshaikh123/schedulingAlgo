@@ -7,11 +7,11 @@ export default function App() {
   const [isOpen, setIsOpen] = useState(false);
   const [results, setResults] = useState({});
   const [showGantt, setShowGantt] = useState(false);
-  const [showProcessTable, setShowProcessTable] = useState(false); // State for ProcessTable visibility
+  const [showProcessTable, setShowProcessTable] = useState(false);
   const [showProcessTableSRJN, setShowProcessTableSRJN] = useState(false);
   const [stratergy, setStratergy] = useState(1);
-
-
+  const [loading, setLoading] = useState(true);
+  const [fadeOut, setFadeOut] = useState(false);
   function handleData(date) {
     setData((data) => [...data, date]);
   }
@@ -144,7 +144,6 @@ export default function App() {
     setShowGantt(false);
     setShowProcessTable(false);
   };
-
   const calculateRoundRobin = (data, quantum) => {
     const n = data.process.length;
     let waitingTime = Array(n).fill(0);
@@ -153,36 +152,42 @@ export default function App() {
     let time = 0;
     let ganttChart = [];
 
-    while (true) {
-      let done = true;
+    let completed = 0; // Track completed processes
+    let currentIndex = 0; // Track which process is currently executing
 
-      for (let i = 0; i < n; i++) {
-        if (remainingBurst[i] > 0) {
-          done = false; // There is a pending process
+    while (completed < n) {
+      const burstLeft = remainingBurst[currentIndex];
 
-          if (remainingBurst[i] > quantum) {
-            time += quantum;
-            remainingBurst[i] -= quantum;
-          } else {
-            time += remainingBurst[i];
-            ganttChart.push({
-              process: data.process[i],
-              start: time - remainingBurst[i],
-              end: time,
-            });
-            remainingBurst[i] = 0;
-          }
+      if (burstLeft > 0) {
+        let startTime = time; // The process starts now
+        if (burstLeft > quantum) {
+          time += quantum;
+          remainingBurst[currentIndex] -= quantum;
+        } else {
+          time += burstLeft;
+          remainingBurst[currentIndex] = 0;
+          completed++;
         }
+
+        ganttChart.push({
+          process: data.process[currentIndex],
+          start: startTime,
+          end: time,
+        });
       }
 
-      if (done) break; // Exit loop if all processes are done
+      currentIndex = (currentIndex + 1) % n; // Round robin: move to the next process
     }
 
-    // Calculate waiting and turnaround times
+    // Calculate waiting time and turnaround time
     for (let i = 0; i < n; i++) {
-      turnaroundTime[i] = ganttChart
-        .filter((g) => g.process === data.process[i])
-        .reduce((sum, g) => sum + (g.end - g.start), 0);
+      let processBursts = ganttChart.filter(
+        (g) => g.process === data.process[i]
+      );
+
+      // Completion time of the process is the last end time in the Gantt chart
+      let completionTime = processBursts[processBursts.length - 1].end;
+      turnaroundTime[i] = completionTime - 0; // Assuming arrival time is 0
       waitingTime[i] = turnaroundTime[i] - data.burst[i];
     }
 
@@ -267,19 +272,44 @@ export default function App() {
       turnaroundTime,
       ganttChart,
       completionTime, // Add this to the result
-      arrival: arrivalTime
+      arrival: arrivalTime,
     };
 
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTableSRJN(false);
   };
+  function refresh() {
+    setData([]);
+    setIsOpen(false);
+    setResults({});
+    setShowGantt(false);
+    setShowProcessTable(false);
+    setShowProcessTableSRJN(false);
+  }
+  useEffect(() => {
+    // Simulate a loading process (e.g., fetching data)
+    const timer = setTimeout(() => {
+      setLoading(false); // Change loading state after 3 seconds
+     
+    }, 4000);
+    const fadeInTimer = setTimeout(() => {
+      setFadeOut(true); // Start fade out effect after loading completes
+    }, 3100); // Adjust timing based on your loading duration
+    
+
+    return () => {
+      clearTimeout(timer);
+      clearTimeout(fadeInTimer);
+    }; // Cleanup timers
+  }, []);
+
   useEffect(() => {
     if (results.length > 0) {
       setShowGantt(true);
     }
   }, [results]);
-  
+
   useEffect(() => {
     if (showGantt && results.ganttChart && results.ganttChart.length > 0) {
       setTimeout(() => {
@@ -289,69 +319,76 @@ export default function App() {
     }
   }, [showGantt, results.ganttChart]);
   return (
-    <div>
-      {/* Section with Bootstrap classes for margin and alignment */}
-      <section className="my-4">
-        <center>
-          <h1 className="display-4">Scheduling Algorithm Calculator</h1>
-        </center>
-      </section>
-  
-      {/* Form section with container and padding for spacing */}
-      <div className="container py-3">
-        <Form
-          onData={handleData}
-          data={data}
-          onOpen={handleOpen}
-          onCalculateFCFS={calculateFCFS}
-          onCalculateSJF={calculateSJF}
-          onCalculatePriority={calculatePriority}
-          onCalculateRoundRobin={calculateRoundRobin}
-          onCalculatePreemptiveSRJN={calculatePreemptiveSRJN}
-          stratergy={stratergy}
-          setStratergy={setStratergy}
-        />
-      </div>
-  
-      {/* Table Section with container and margin */}
-      <div className="container-lg my-4">
-        <Table
-          data={data}
-          stratergy={stratergy}
-          isOpen={isOpen}
-          onComplete={() => setShowGantt(true)}
-        />
-      </div>
-  
-      {/* Gantt Chart Section with conditional rendering */}
-      {showGantt && (
-        <div className="container-lg my-7">
-          <GanttChart
-            results={results}
-            onComplete={() => setShowProcessTable(true)}
-          />
+    <>
+      {loading ? (
+        <Loader fadeOut={fadeOut} />
+      ) : (
+        <div >
+          <section className="my-4">
+            <center>
+              <h1 className="display-4 header">
+                Scheduling Algorithm Calculator
+              </h1>
+            </center>
+          </section>
+
+          <div className="container py-3">
+            <Form
+              onData={handleData}
+              data={data}
+              onOpen={handleOpen}
+              onCalculateFCFS={calculateFCFS}
+              onCalculateSJF={calculateSJF}
+              onCalculatePriority={calculatePriority}
+              onCalculateRoundRobin={calculateRoundRobin}
+              onCalculatePreemptiveSRJN={calculatePreemptiveSRJN}
+              stratergy={stratergy}
+              setStratergy={setStratergy}
+              onRefresh={refresh}
+            />
+          </div>
+
+          {/* Table Section with container and margin */}
+          <div className="container-lg my-4">
+            <Table
+              data={data}
+              stratergy={stratergy}
+              isOpen={isOpen}
+              onComplete={() => setShowGantt(true)}
+            />
+          </div>
+
+          {/* Gantt Chart Section with conditional rendering */}
+          {showGantt && (
+            <div className="container-lg my-7">
+              <GanttChart
+                results={results}
+                onComplete={() => setShowProcessTable(true)}
+              />
+            </div>
+          )}
+
+          {/* Conditional rendering for Process Table and Average Time */}
+          {stratergy === 5
+            ? showProcessTableSRJN && (
+                <div className="container-lg my-7 ">
+                  <SRJNProcessTable
+                    results={results}
+                    isOpen={showProcessTableSRJN}
+                  />
+                  <AverageTime results={results} />
+                </div>
+              )
+            : showProcessTable && (
+                <div className="container-lg my-7">
+                  <ProcessTable results={results} isOpen={showProcessTable} />
+                  <AverageTime results={results} />
+                </div>
+              )}
         </div>
       )}
-  
-      {/* Conditional rendering for Process Table and Average Time */}
-      {stratergy === 5 ? (
-        showProcessTableSRJN && (
-          <div className="container-lg my-7 ">
-            <SRJNProcessTable results={results} isOpen={showProcessTableSRJN} />
-            <AverageTime results={results} />
-          </div>
-        )
-      ) : (
-        showProcessTable && (
-          <div className="container-lg my-7">
-            <ProcessTable results={results} isOpen={showProcessTable} />
-            <AverageTime results={results} />
-          </div>
-        )
-      )}
-    </div>
+    </>
   );
-  
 }
 
 function Form({
@@ -363,13 +400,14 @@ function Form({
   onCalculateRoundRobin,
   onCalculatePreemptiveSRJN,
   stratergy,
-  setStratergy
+  setStratergy,
+  onRefresh,
 }) {
-  const [processCount, setProcessCount] = useState(0);
+  const [processCount, setProcessCount] = useState(null);
   const [burst, setBurst] = useState([]);
   const [arrival, setArrival] = useState([]);
   const [priority, setPriority] = useState([]);
-  
+
   const [quantum, setQuantum] = useState(null);
   function handleClick(e) {
     e.preventDefault();
@@ -412,22 +450,26 @@ function Form({
     setBurst([]);
     setArrival([]);
     setPriority([]);
+
     onOpen(true);
   }
 
   return (
-    <div className="container py-4">
-      <form onSubmit={handleClick} className="bg-light p-4 rounded shadow">
-        <h2 className="mb-4">Scheduling Algorithm Input</h2>
-  
+    <div className="container py-4 ">
+      <form onSubmit={handleClick} className=" p-4 rounded form">
+        <h2 className=" head mb-4">Scheduling Algorithm Input</h2>
+
         <div className="mb-3">
-          <label htmlFor="ty" className="form-label">Enter Type:</label>
+          <label htmlFor="ty" className="form-label">
+            Enter Type:
+          </label>
           <select
             name="stratergies"
             id="ty"
             className="form-select"
             onChange={(e) => {
               setStratergy(Number(e.target.value));
+              onRefresh();
             }}
           >
             <option value="1">First Come First Serve</option>
@@ -437,22 +479,25 @@ function Form({
             <option value="5">Preemptive</option>
           </select>
         </div>
-  
+
         <div className="mb-3">
-          <label htmlFor="pr" className="form-label">Enter Number of Processes:</label>
+          <label htmlFor="pr" className="form-label">
+            Enter Number of Processes:
+          </label>
           <input
             type="number"
-            value={processCount}
             min={1}
             onChange={(e) => setProcessCount(Number(e.target.value))}
             className="form-control"
             required
           />
         </div>
-  
+
         {stratergy === 4 && (
           <div className="mb-3">
-            <label htmlFor="pr1" className="form-label">Enter Quantum:</label>
+            <label htmlFor="pr1" className="form-label">
+              Enter Quantum:
+            </label>
             <input
               type="number"
               value={quantum}
@@ -463,10 +508,12 @@ function Form({
             />
           </div>
         )}
-  
+
         {Array.from({ length: processCount }).map((_, i) => (
           <div className="mb-3" key={i}>
-            <label className="form-label">Burst Time for Process {i + 1}:</label>
+            <label className="form-label">
+              Burst Time for Process {i + 1}:
+            </label>
             <input
               type="number"
               value={burst[i] || ""}
@@ -480,100 +527,108 @@ function Form({
             />
           </div>
         ))}
-  
-        {stratergy === 5 && Array.from({ length: processCount }).map((_, i) => (
-          <div className="mb-3" key={i}>
-            <label className="form-label">Arrival Time for Process {i + 1}:</label>
-            <input
-              type="number"
-              value={arrival[i] || ""}
-              onChange={(e) => {
-                const newArrival = [...arrival];
-                newArrival[i] = Number(e.target.value);
-                setArrival(newArrival);
-              }}
-              className="form-control"
-              required
-            />
-          </div>
-        ))}
-  
-        {stratergy === 3 && Array.from({ length: processCount }).map((_, i) => (
-          <div className="mb-3" key={i}>
-            <label className="form-label">Priority for Process {i + 1}:</label>
-            <input
-              type="number"
-              value={priority[i] || ""}
-              onChange={(e) => {
-                const newPriority = [...priority];
-                newPriority[i] = Number(e.target.value);
-                setPriority(newPriority);
-              }}
-              className="form-control"
-              required
-            />
-          </div>
-        ))}
-  
-        <button type="submit" className="btn btn-primary">Calculate</button>
+
+        {stratergy === 5 &&
+          Array.from({ length: processCount }).map((_, i) => (
+            <div className="mb-3" key={i}>
+              <label className="form-label">
+                Arrival Time for Process {i + 1}:
+              </label>
+              <input
+                type="number"
+                onChange={(e) => {
+                  const newArrival = [...arrival];
+                  newArrival[i] = Number(e.target.value);
+                  setArrival(newArrival);
+                }}
+                className="form-control"
+                required
+              />
+            </div>
+          ))}
+
+        {stratergy === 3 &&
+          Array.from({ length: processCount }).map((_, i) => (
+            <div className="mb-3" key={i}>
+              <label className="form-label">
+                Priority for Process {i + 1}:
+              </label>
+              <input
+                type="number"
+                value={priority[i] || ""}
+                onChange={(e) => {
+                  const newPriority = [...priority];
+                  newPriority[i] = Number(e.target.value);
+                  setPriority(newPriority);
+                }}
+                className="form-control"
+                required
+              />
+            </div>
+          ))}
+
+        <button type="submit" className="btn ">
+          Calculate
+        </button>
       </form>
     </div>
   );
-  
 }
+
 function Table({ data, isOpen, onComplete, stratergy }) {
   return (
     <>
       {isOpen && (
         <>
-        <h4 className="text-primary  mb-4">Question</h4>
-        <table className="table table-striped table-bordered">
-          <thead>
-            <tr>
-              <th scope="col">Process</th>
-              <th scope="col">Burst Time</th>
-              {stratergy === 5 && <th scope="col">Arrival Time</th>}
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((item, index) => (
-              <React.Fragment key={index}>
-                {item.process.map((process, i) => (
-                  <motion.tr
-                    key={i}
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: i * 0.2 }}
-                    onAnimationComplete={() => {
-                      if (
-                        i === item.process.length - 1 &&
-                        index === data.length - 1
-                      ) {
-                        onComplete();
-                      }
-                    }}
-                  >
-                    <td>P{process}</td>
-                    <td>{item.burst[i]}</td>
-                    {stratergy === 5 && <td>{item.arrival[i]}</td>}
-                  </motion.tr>
-                  
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+          <h4 className=" head  mb-4">Question</h4>
+          <table className="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th scope="col">Process</th>
+                <th scope="col">Burst Time</th>
+                {stratergy === 5 && <th scope="col">Arrival Time</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {data.map((item, index) => (
+                <React.Fragment key={index}>
+                  {item.process.map((process, i) => (
+                    <motion.tr
+                      key={i}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.5, delay: i * 0.2 }}
+                      onAnimationComplete={() => {
+                        if (
+                          i === item.process.length - 1 &&
+                          index === data.length - 1
+                        ) {
+                          onComplete();
+                        }
+                      }}
+                    >
+                      <td>P{process}</td>
+                      <td>{item.burst[i]}</td>
+                      {stratergy === 5 && <td>{item.arrival[i]}</td>}
+                    </motion.tr>
+                  ))}
+                </React.Fragment>
+              ))}
+            </tbody>
+          </table>
         </>
       )}
     </>
   );
-  
 }
 function GanttChart({ results, onComplete }) {
   return (
     <>
-   <h4 className="text-primary mb-4">Gantt Chart</h4>
-      <table className="table table-bordered table-hover" style={{ width: "100%", borderCollapse: "collapse" }}>
+      <h4 className=" mb-4 head">Gantt Chart</h4>
+      <table
+        className="table table-bordered table-hover"
+        style={{ width: "100%", borderCollapse: "collapse" }}
+      >
         <tbody>
           <tr>
             {results.ganttChart.map((item, index) => (
@@ -598,18 +653,25 @@ function GanttChart({ results, onComplete }) {
                 <sup
                   style={{
                     position: "absolute",
-                    top: "-10px",
+                    top: "-12px",
                     left: "50%",
                     transform: "translateX(-50%)",
+                    fontSize: "16px",
                   }}
                 >
                   {item.end - item.start}
                 </sup>
-                <p style={{ margin: "20px 0 0" }}>P{item.process}</p>
-                <div style={{ position: "absolute", bottom: "5px", left: "5px" }}>
+                <p style={{ margin: "20px 0 0" }}>
+                  <b> P{item.process} </b>
+                </p>
+                <div
+                  style={{ position: "absolute", bottom: "5px", left: "5px" }}
+                >
                   <sub>{item.start}</sub>
                 </div>
-                <div style={{ position: "absolute", bottom: "5px", right: "5px" }}>
+                <div
+                  style={{ position: "absolute", bottom: "5px", right: "5px" }}
+                >
                   <sub>
                     {index === results.ganttChart.length - 1
                       ? item.end
@@ -623,48 +685,56 @@ function GanttChart({ results, onComplete }) {
       </table>
     </>
   );
-  
 }
 
 function ProcessTable({ results, isOpen }) {
-  return (
-    <>
-      {isOpen && (
-        <>
-        <h4 className="text-primary mb-4">Process Table</h4>
-        <table className="table table-striped table-bordered">
-          <thead className="thead-dark">
-            <tr>
-              <th>Process</th>
-              <th>Burst Time</th>
-              <th>Waiting Time</th>
-              <th>Turnaround Time</th>
-            </tr>
-          </thead>
-          <tbody>
-            {results.ganttChart.map((item, index) => (
-              <motion.tr
-                key={index}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.3 }}
-              >
-                <td>P{item.process}</td>
-                <td>{results.burst[index]}</td>
-                <td>{Math.abs(results.waitingTime[index])}</td>
-                <td>{results.turnaroundTime[index]}</td>
-              </motion.tr>
-            ))}
-          </tbody>
-        </table>
-        </>
-      )}
-    </>
-  );
-  
+  try {
+    return (
+      <>
+        {isOpen && (
+          <>
+            <h4 className=" mb-4 head">Process Table</h4>
+            <table className="table table-striped table-bordered">
+              <thead className="thead-dark">
+                <tr>
+                  <th>Process</th>
+                  <th>Burst Time</th>
+                  <th>Waiting Time</th>
+                  <th>Turnaround Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.ganttChart
+                  .filter(
+                    (item, index) =>
+                      !isNaN(results.waitingTime[index]) &&
+                      !isNaN(results.turnaroundTime[index])
+                  )
+                  .map((item, index) => (
+                    <motion.tr
+                      key={index}
+                      initial={{ opacity: 0, y: 50 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.3 }}
+                    >
+                      <td>P{item.process}</td>
+                      <td>{results.burst[index]}</td>
+                      <td>{Math.abs(results.waitingTime[index])}</td>
+                      <td>{results.turnaroundTime[index]}</td>
+                    </motion.tr>
+                  ))}
+              </tbody>
+            </table>
+          </>
+        )}
+      </>
+    );
+  } catch (e) {
+    console.log("Chill he sab!");
+  }
 }
 
-function SRJNProcessTable({ results, isOpen  }) {
+function SRJNProcessTable({ results, isOpen }) {
   if (!isOpen) return null;
 
   // Create an array to store the aggregated data for each process
@@ -679,7 +749,7 @@ function SRJNProcessTable({ results, isOpen  }) {
         burstTime: results.burst?.[processIndex] ?? "N/A",
         waitingTime: Math.abs(results.waitingTime?.[processIndex]) ?? "N/A",
         turnaroundTime: results.turnaroundTime?.[processIndex] ?? "N/A",
-        completionTime: results.completionTime?.[processIndex] ?? "N/A"
+        completionTime: results.completionTime?.[processIndex] ?? "N/A",
       };
     }
 
@@ -689,63 +759,90 @@ function SRJNProcessTable({ results, isOpen  }) {
 
   return (
     <>
-    <h4 className="text-primary mb-4">Process Table</h4>
-    <table className="table table-striped table-bordered">
-      <thead className="thead-dark">
-        <tr>
-          <th>Process</th>
-          <th>Arrival Time</th>
-          <th>Burst Time</th>
-          <th>Waiting Time</th>
-          <th>Turnaround Time</th>
-          <th>Completion Time</th>
-        </tr>
-      </thead>
-      <tbody>
-        {aggregatedResults.map((item, index) => (
-          <motion.tr
-            key={index}
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: index * 0.3 }}
-          >
-            <td>P{item.process}</td>
-            <td>{item.arrivalTime}</td>
-            <td>{item.burstTime}</td>
-            <td>{item.waitingTime}</td>
-            <td>{item.turnaroundTime}</td>
-            <td>{item.completionTime}</td>
-          </motion.tr>
-        ))}
-      </tbody>
-    </table>
+      <h4 className=" mb-4 head">Process Table</h4>
+      <table className="table table-striped table-bordered">
+        <thead className="thead-dark">
+          <tr>
+            <th>Process</th>
+            <th>Arrival Time</th>
+            <th>Burst Time</th>
+            <th>Waiting Time</th>
+            <th>Turnaround Time</th>
+            <th>Completion Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          {aggregatedResults.map((item, index) => (
+            <motion.tr
+              key={index}
+              initial={{ opacity: 0, y: 50 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.3 }}
+            >
+              <td>P{item.process}</td>
+              <td>{item.arrivalTime}</td>
+              <td>{item.burstTime}</td>
+              <td>{item.waitingTime}</td>
+              <td>{item.turnaroundTime}</td>
+              <td>{item.completionTime}</td>
+            </motion.tr>
+          ))}
+        </tbody>
+      </table>
     </>
   );
-  
 }
 
+function AverageTime({ results }) {
+  let averageWaitingTime;
+  let averageTurnaroundTime;
 
- function AverageTime({ results }){
-  // Calculate average waiting time
-  const averageWaitingTime = results.waitingTime.reduce((acc, time) => acc + time, 0) / results.waitingTime.length;
+  try {
+    // Calculate average waiting time
+    averageWaitingTime =
+      results.waitingTime.reduce((acc, time) => acc + time, 0) /
+      results.waitingTime.length;
 
-  // Calculate average turnaround time
-  const averageTurnaroundTime = results.turnaroundTime.reduce((acc, time) => acc + time, 0) / results.turnaroundTime.length;
+    // Calculate average turnaround time
+    averageTurnaroundTime =
+      results.turnaroundTime.reduce((acc, time) => acc + time, 0) /
+      results.turnaroundTime.length;
+  } catch (e) {
+    console.log("Chill he bhai!");
+  }
+
+  // Check if either average is NaN
+  if (isNaN(averageWaitingTime) || isNaN(averageTurnaroundTime)) {
+    return null; // Render nothing if any average is NaN
+  }
 
   return (
-    <motion.div 
-      className="average-time" 
-      initial={{ opacity: 0, y: 20 }} 
-      animate={{ opacity: 1, y: 0 }} 
+    <motion.div
+      className="average-time"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <h4 className="text-primary mb-4">Average Times</h4>
+      <h4 className="mb-4 head">Average Times</h4>
       <p>
-        Average Waiting Time: {isNaN(averageWaitingTime) ? "N/A" : averageWaitingTime.toFixed(2)}
+        Average Waiting Time:{" "}
+        <span className="head"> {averageWaitingTime.toFixed(2)}</span>
       </p>
       <p>
-        Average Turnaround Time: {isNaN(averageTurnaroundTime) ? "N/A" : averageTurnaroundTime.toFixed(2)}
+        Average Turnaround Time:{" "}
+        <span className="head">{averageTurnaroundTime.toFixed(2)}</span>
       </p>
     </motion.div>
   );
-};
+}
+
+function Loader({fadeOut}) {
+  return (
+    <center className={`content ${fadeOut ? 'fade-out' : 'fade-in'}`}>
+      <h1 className="App-header">
+        WELCOME TO OUR CALCULATOR <br /><br />
+        <l-grid size="70" speed="1.5" color="white"></l-grid>
+      </h1>
+    </center>
+  );
+}
