@@ -327,7 +327,7 @@ export default function App() {
           <section className="my-4">
             <center>
               <h1 className="display-4 header">
-                Scheduling Algorithm Calculator
+                SA Calculator
               </h1>
             </center>
           </section>
