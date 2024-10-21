@@ -315,7 +315,7 @@ export default function App() {
       setTimeout(() => {
         setShowProcessTable(true);
         setShowProcessTableSRJN(true);
-      }, results.ganttChart.length * 300);
+      }, results.ganttChart.length * 500);
     }
   }, [showGantt, results.ganttChart]);
   return (
