@@ -9,6 +9,7 @@ export default function App() {
   const [showGantt, setShowGantt] = useState(false);
   const [showProcessTable, setShowProcessTable] = useState(false);
   const [showProcessTableSRJN, setShowProcessTableSRJN] = useState(false);
+  const [showAvgTimes, setShowAvgTimes] = useState(false);
   const [stratergy, setStratergy] = useState(1);
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
@@ -52,6 +53,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
+    setShowAvgTimes(false);
   };
 
   const calculateSJF = (data) => {
@@ -97,6 +99,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
+    setShowAvgTimes(false);
   };
 
   const calculatePriority = (data) => {
@@ -143,6 +146,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
+    setShowAvgTimes(false);
   };
   const calculateRoundRobin = (data, quantum) => {
     const n = data.process.length;
@@ -201,6 +205,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
+    setShowAvgTimes(false);
   };
 
   const calculatePreemptiveSRJN = (data) => {
@@ -278,6 +283,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTableSRJN(false);
+    setShowAvgTimes(false);
   };
   function refresh() {
     setData([]);
@@ -286,17 +292,16 @@ export default function App() {
     setShowGantt(false);
     setShowProcessTable(false);
     setShowProcessTableSRJN(false);
+    setShowAvgTimes(false);
   }
   useEffect(() => {
     // Simulate a loading process (e.g., fetching data)
     const timer = setTimeout(() => {
       setLoading(false); // Change loading state after 3 seconds
-     
     }, 4000);
     const fadeInTimer = setTimeout(() => {
       setFadeOut(true); // Start fade out effect after loading completes
     }, 3100); // Adjust timing based on your loading duration
-    
 
     return () => {
       clearTimeout(timer);
@@ -315,20 +320,20 @@ export default function App() {
       setTimeout(() => {
         setShowProcessTable(true);
         setShowProcessTableSRJN(true);
-      }, results.ganttChart.length * 500);
+      }, results.ganttChart.length * 900);
     }
-  }, [showGantt, results.ganttChart]);
+   
+  }, [showGantt,  results.ganttChart]);
+
   return (
     <>
       {loading ? (
         <Loader fadeOut={fadeOut} />
       ) : (
-        <div >
+        <div>
           <section className="my-4">
             <center>
-              <h1 className="display-4 header">
-                SA Calculator
-              </h1>
+              <h1 className="display-4 header">OSY MICROPROJECT🧮</h1>
             </center>
           </section>
 
@@ -360,7 +365,7 @@ export default function App() {
 
           {/* Gantt Chart Section with conditional rendering */}
           {showGantt && (
-            <div className="container-lg my-7">
+            <div className="container-lg my-4">
               <GanttChart
                 results={results}
                 onComplete={() => setShowProcessTable(true)}
@@ -371,18 +376,23 @@ export default function App() {
           {/* Conditional rendering for Process Table and Average Time */}
           {stratergy === 5
             ? showProcessTableSRJN && (
-                <div className="container-lg my-7 ">
+                <div className="container-lg my-4 ">
                   <SRJNProcessTable
                     results={results}
                     isOpen={showProcessTableSRJN}
+                    onComplete={showAvgTimes}
                   />
-                  <AverageTime results={results} />
+                  <AverageTime results={results} isOpen={showAvgTimes} />
                 </div>
               )
             : showProcessTable && (
-                <div className="container-lg my-7">
-                  <ProcessTable results={results} isOpen={showProcessTable} />
-                  <AverageTime results={results} />
+                <div className="container-lg my-4">
+                  <ProcessTable
+                    results={results}
+                    isOpen={showProcessTable}
+                    onComplete={showAvgTimes}
+                  />
+                  <AverageTime results={results} isOpen={setShowAvgTimes} />
                 </div>
               )}
         </div>
@@ -455,21 +465,31 @@ function Form({
   }
 
   return (
-    <div className="container py-4 ">
-      <form onSubmit={handleClick} className=" p-4 rounded form">
-        <h2 className=" head mb-4">Scheduling Algorithm Input</h2>
+    <div className="container py-4">
+      <form onSubmit={handleClick} className="p-4 rounded form">
+        <h2
+          className="head mb-4"
+          style={{ textAlign: "center", color: "#493628" }}
+        >
+          Enter Details
+        </h2>
 
         <div className="mb-3">
           <label htmlFor="ty" className="form-label">
             Enter Type:
           </label>
           <select
-            name="stratergies"
+            name="strategies"
             id="ty"
             className="form-select"
             onChange={(e) => {
               setStratergy(Number(e.target.value));
               onRefresh();
+            }}
+            style={{
+              padding: "10px",
+              borderRadius: "5px",
+              border: "1px solid #D6C0B3",
             }}
           >
             <option value="1">First Come First Serve</option>
@@ -490,6 +510,11 @@ function Form({
             onChange={(e) => setProcessCount(Number(e.target.value))}
             className="form-control"
             required
+            style={{
+              padding: "10px",
+              borderRadius: "5px",
+              border: "1px solid #D6C0B3",
+            }}
           />
         </div>
 
@@ -505,6 +530,11 @@ function Form({
               onChange={(e) => setQuantum(Number(e.target.value))}
               className="form-control"
               required
+              style={{
+                padding: "10px",
+                borderRadius: "5px",
+                border: "1px solid #D6C0B3",
+              }}
             />
           </div>
         )}
@@ -524,6 +554,11 @@ function Form({
               }}
               className="form-control"
               required
+              style={{
+                padding: "10px",
+                borderRadius: "5px",
+                border: "1px solid #D6C0B3",
+              }}
             />
           </div>
         ))}
@@ -543,6 +578,11 @@ function Form({
                 }}
                 className="form-control"
                 required
+                style={{
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #D6C0B3",
+                }}
               />
             </div>
           ))}
@@ -563,11 +603,28 @@ function Form({
                 }}
                 className="form-control"
                 required
+                style={{
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #D6C0B3",
+                }}
               />
             </div>
           ))}
-
-        <button type="submit" className="btn ">
+  <p><b>Note:</b> To refresh the calculator change the stratergy...😁 </p>
+        <button
+          type="submit"
+          className="btn btn-primary"
+          style={{
+            padding: "10px 20px",
+            borderRadius: "5px",
+            border: "none",
+            fontWeight: "bold",
+            width: "100%",
+            marginTop: "10px",
+            transition: "background-color 0.3s",
+          }}
+        >
           Calculate
         </button>
       </form>
@@ -580,151 +637,283 @@ function Table({ data, isOpen, onComplete, stratergy }) {
     <>
       {isOpen && (
         <>
-          <h4 className=" head  mb-4">Question</h4>
-          <table className="table table-striped table-bordered">
-            <thead>
-              <tr>
-                <th scope="col">Process</th>
-                <th scope="col">Burst Time</th>
-                {stratergy === 5 && <th scope="col">Arrival Time</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {data.map((item, index) => (
-                <React.Fragment key={index}>
-                  {item.process.map((process, i) => (
-                    <motion.tr
-                      key={i}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.5, delay: i * 0.2 }}
-                      onAnimationComplete={() => {
-                        if (
-                          i === item.process.length - 1 &&
-                          index === data.length - 1
-                        ) {
-                          onComplete();
-                        }
+          <h4 className="head mb-4" style={{ textAlign: "center" }}>
+            Process Table
+          </h4>
+          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+            <table
+              className="table"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                margin: "20px 0",
+                fontSize: "16px",
+                textAlign: "center",
+                backgroundColor: "#fdfdfd",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                borderRadius: "10px",
+                overflow: "hidden",
+              }}
+            >
+              <thead>
+                <tr
+                  style={{
+                    // Header text color
+                    textTransform: "uppercase",
+                    letterSpacing: "1px",
+                    fontWeight: "bold",
+                  }}
+                >
+                  <th
+                    style={{
+                      padding: "12px 15px",
+                      backgroundColor: "#493628", // Table header background color
+                      color: "#E4E0E1",
+                    }}
+                  >
+                    Process
+                  </th>
+                  <th
+                    style={{
+                      padding: "12px 15px",
+                      backgroundColor: "#493628", // Table header background color
+                      color: "#E4E0E1",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    Burst Time
+                  </th>
+                  {stratergy === 5 && (
+                    <th
+                      style={{
+                        padding: "12px 15px",
+                        backgroundColor: "#493628", // Table header background color
+                        color: "#E4E0E1",
+                        textTransform: "uppercase",
+                        letterSpacing: "1px",
+                        fontWeight: "bold",
                       }}
                     >
-                      <td>P{process}</td>
-                      <td>{item.burst[i]}</td>
-                      {stratergy === 5 && <td>{item.arrival[i]}</td>}
-                    </motion.tr>
-                  ))}
-                </React.Fragment>
-              ))}
-            </tbody>
-          </table>
+                      Arrival Time
+                    </th>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {data.map((item, index) => (
+                  <React.Fragment key={index}>
+                    {item.process.map((process, i) => (
+                      <motion.tr
+                        key={i}
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.5, delay: i * 0.2 }}
+                        onAnimationComplete={() => {
+                          if (
+                            i === item.process.length - 1 &&
+                            index === data.length - 1
+                          ) {
+                            onComplete();
+                          }
+                        }}
+                        style={{
+                          backgroundColor: i % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
+                        }}
+                      >
+                        <td style={{ padding: "12px 15px" }}>P{process}</td>
+                        <td style={{ padding: "12px 15px" }}>{item.burst[i]}</td>
+                        {stratergy === 5 && (
+                          <td style={{ padding: "12px 15px" }}>
+                            {item.arrival[i]}
+                          </td>
+                        )}
+                      </motion.tr>
+                    ))}
+                  </React.Fragment>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </>
       )}
     </>
   );
 }
+
 function GanttChart({ results, onComplete }) {
   return (
-    <>
-      <h4 className=" mb-4 head">Gantt Chart</h4>
-      <table
-        className="table table-bordered table-hover"
-        style={{ width: "100%", borderCollapse: "collapse" }}
-      >
-        <tbody>
-          <tr>
-            {results.ganttChart.map((item, index) => (
-              <motion.td
-                key={index}
-                initial={{ opacity: 0, x: -50 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.5 }}
-                onAnimationComplete={() => {
-                  if (index === results.ganttChart.length - 1) {
-                    setTimeout(onComplete, 10000);
-                  }
-                }}
-                style={{
-                  textAlign: "center",
-                  padding: "10px",
-                  position: "relative",
-                  backgroundColor: "#f8f9fa", // Light background color
-                  border: "1px solid #dee2e6", // Light border color
-                }}
-              >
-                <sup
-                  style={{
-                    position: "absolute",
-                    top: "-12px",
-                    left: "50%",
-                    transform: "translateX(-50%)",
-                    fontSize: "16px",
-                  }}
-                >
-                  {item.end - item.start}
-                </sup>
-                <p style={{ margin: "20px 0 0" }}>
-                  <b> P{item.process} </b>
-                </p>
-                <div
-                  style={{ position: "absolute", bottom: "5px", left: "5px" }}
-                >
-                  <sub>{item.start}</sub>
-                </div>
-                <div
-                  style={{ position: "absolute", bottom: "5px", right: "5px" }}
-                >
-                  <sub>
-                    {index === results.ganttChart.length - 1
-                      ? item.end
-                      : results.ganttChart[index + 1].start}
-                  </sub>
-                </div>
-              </motion.td>
-            ))}
-          </tr>
-        </tbody>
-      </table>
-    </>
+ 
+      
+        <>
+          <h4
+            className="mb-4 head"
+            style={{ fontSize: "24px", textAlign: "center" }}
+          >
+            Gantt Chart
+          </h4>
+          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+            <table
+              className="table table-bordered"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                borderRadius: "8px",
+                overflow: "hidden",
+              }}
+            >
+              <tbody>
+                <tr>
+                  {results.ganttChart.map((item, index) => (
+                    <motion.td
+                      key={index}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: index * 0.8 }}
+                      onAnimationComplete={() => {
+                        if (index === results.ganttChart.length - 1) {
+                          setTimeout(onComplete, 10000);
+                        }
+                      }}
+                      style={{
+                        textAlign: "center",
+                        padding: "16px",
+                        position: "relative",
+                        backgroundColor: index % 2 === 0 ? "#D6C0B3" : "#fff", // Alternating row colors
+                        border: "1px solid #dee2e6",
+                        borderRadius: "4px",
+                        fontSize: "18px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      <sup
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          marginBottom: "-2px",
+                        }}
+                      >
+                        {item.end - item.start}
+                      </sup>
+                      <p
+                        style={{
+                          margin: "10px 0 0",
+                          fontSize: "20px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        P{item.process}
+                      </p>
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "5px",
+                          left: "5px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <sub>{item.start}</sub>
+                      </div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "5px",
+                          right: "5px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <sub>
+                          {index === results.ganttChart.length - 1
+                            ? item.end
+                            : results.ganttChart[index + 1].start}
+                        </sub>
+                      </div>
+                    </motion.td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      
+   
   );
 }
 
-function ProcessTable({ results, isOpen }) {
+function ProcessTable({ results, isOpen, onComplete }) {
   try {
     return (
       <>
         {isOpen && (
           <>
-            <h4 className=" mb-4 head">Process Table</h4>
-            <table className="table table-striped table-bordered">
-              <thead className="thead-dark">
-                <tr>
-                  <th>Process</th>
-                  <th>Burst Time</th>
-                  <th>Waiting Time</th>
-                  <th>Turnaround Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {results.ganttChart
-                  .filter(
-                    (item, index) =>
-                      !isNaN(results.waitingTime[index]) &&
-                      !isNaN(results.turnaroundTime[index])
-                  )
-                  .map((item, index) => (
+            <h4
+              className="my-4 head"
+              style={{
+                fontSize: "24px",
+                textAlign: "center",
+              }}
+            >
+              Process Table
+            </h4>
+            <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+              <table
+                className="table"
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  margin: "20px 0",
+                  fontSize: "16px",
+                  textAlign: "center",
+                  backgroundColor: "#fdfdfd",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <thead>
+                  <tr
+                    style={{
+                      backgroundColor: "#493628",
+                      color: "#E4E0E1",
+                      textTransform: "uppercase",
+                      letterSpacing: "1px",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    <th style={headerStyle}>Process</th>
+                    <th style={headerStyle}>Burst Time</th>
+                    <th style={headerStyle}>Waiting Time</th>
+                    <th style={headerStyle}>Turnaround Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {results.ganttChart.map((item, index) => (
                     <motion.tr
                       key={index}
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.5, delay: index * 0.3 }}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: index * 0.5 }}
+                      onAnimationComplete={() => {
+                        if (index === results.ganttChart.length - 1) {
+                          setTimeout(onComplete, 10000); // Delay completion
+                        }
+                      }}
+                      style={{
+                        backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#E4E0E1",
+                      }}
                     >
-                      <td>P{item.process}</td>
-                      <td>{results.burst[index]}</td>
-                      <td>{Math.abs(results.waitingTime[index])}</td>
-                      <td>{results.turnaroundTime[index]}</td>
+                      <td style={cellStyle}>P{item.process}</td>
+                      <td style={cellStyle}>{results.burst[index]}</td>
+                      <td style={cellStyle}>{Math.abs(results.waitingTime[index])}</td>
+                      <td style={cellStyle}>{results.turnaroundTime[index]}</td>
                     </motion.tr>
                   ))}
-              </tbody>
-            </table>
+                </tbody>
+              </table>
+            </div>
           </>
         )}
       </>
@@ -734,7 +923,7 @@ function ProcessTable({ results, isOpen }) {
   }
 }
 
-function SRJNProcessTable({ results, isOpen }) {
+function SRJNProcessTable({ results, isOpen, onComplete }) {
   if (!isOpen) return null;
 
   // Create an array to store the aggregated data for each process
@@ -756,44 +945,82 @@ function SRJNProcessTable({ results, isOpen }) {
     // If we need to aggregate further (e.g., sum burst times if applicable), do it here.
     return acc;
   }, []);
-
+  try {
   return (
     <>
-      <h4 className=" mb-4 head">Process Table</h4>
-      <table className="table table-striped table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>Process</th>
-            <th>Arrival Time</th>
-            <th>Burst Time</th>
-            <th>Waiting Time</th>
-            <th>Turnaround Time</th>
-            <th>Completion Time</th>
-          </tr>
-        </thead>
-        <tbody>
-          {aggregatedResults.map((item, index) => (
-            <motion.tr
-              key={index}
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.3 }}
+      {isOpen && (
+        <>
+          <h4
+            className="my-4 head"
+            style={{
+              fontSize: "24px",
+              textAlign: "center",
+            }}
+          >
+            Process Table
+          </h4>
+          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+            <table
+              className="table"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                margin: "20px 0",
+                fontSize: "16px",
+                textAlign: "center",
+                backgroundColor: "#fdfdfd",
+                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                borderRadius: "10px",
+                overflow: "hidden",
+              }}
             >
-              <td>P{item.process}</td>
-              <td>{item.arrivalTime}</td>
-              <td>{item.burstTime}</td>
-              <td>{item.waitingTime}</td>
-              <td>{item.turnaroundTime}</td>
-              <td>{item.completionTime}</td>
-            </motion.tr>
-          ))}
-        </tbody>
-      </table>
+              <thead>
+                <tr>
+                  <th style={headerStyle}>Process</th>
+                  <th style={headerStyle}>Arrival Time</th>
+                  <th style={headerStyle}>Burst Time</th>
+                  <th style={headerStyle}>Waiting Time</th>
+                  <th style={headerStyle}>Turnaround Time</th>
+                  <th style={headerStyle}>Completion Time</th>
+                </tr>
+              </thead>
+              <tbody>
+                {aggregatedResults.map((item, index) => (
+                  <motion.tr
+                    key={index}
+                    initial={{ opacity: 0, x: -50 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.5, delay: index * 0.2 }}
+                    onAnimationComplete={() => {
+                      if (index === aggregatedResults.length - 1) {
+                        setTimeout(onComplete, 10000); // Delay completion
+                      }
+                    }}
+                    style={{
+                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
+                    }}
+                  >
+                    <td style={cellStyle}>P{item.process}</td>
+                    <td style={cellStyle}>{item.arrivalTime}</td>
+                    <td style={cellStyle}>{item.burstTime}</td>
+                    <td style={cellStyle}>{item.waitingTime}</td>
+                    <td style={cellStyle}>{item.turnaroundTime}</td>
+                    <td style={cellStyle}>{item.completionTime}</td>
+                  </motion.tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </>
   );
+}catch(e){
+  console.log("Chill he sab")
+}
 }
 
-function AverageTime({ results }) {
+function AverageTime({ results, isOpen }) {
   let averageWaitingTime;
   let averageTurnaroundTime;
 
@@ -815,34 +1042,65 @@ function AverageTime({ results }) {
   if (isNaN(averageWaitingTime) || isNaN(averageTurnaroundTime)) {
     return null; // Render nothing if any average is NaN
   }
-
   return (
-    <motion.div
-      className="average-time"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-    >
-      <h4 className="mb-4 head">Average Times</h4>
-      <p>
-        Average Waiting Time:{" "}
-        <span className="head"> {averageWaitingTime.toFixed(2)}</span>
-      </p>
-      <p>
-        Average Turnaround Time:{" "}
-        <span className="head">{averageTurnaroundTime.toFixed(2)}</span>
-      </p>
-    </motion.div>
+    <>
+      {isOpen && (
+        <div className="average-time-container">
+          <h4 className="mb-4 head" style={{ textAlign: 'center', color: '#493628' }}>
+            Average Times
+          </h4>
+          <motion.div
+            className="average-time p-4 rounded"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 3 }}
+            style={{
+              backgroundColor: '#493628',
+              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+              borderRadius: '10px',
+              color:'#fff',
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
+              <span>AVG WAITING TIME</span>
+              <span className="head" style={{ fontWeight: 'bold',color:"#fff" }}>
+                {averageWaitingTime.toFixed(2)}
+              </span>
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', marginTop: '10px' }}>
+              <span>AVG TURNAROUND TIME</span>
+              <span className="head" style={{ fontWeight: 'bold', color:"#fff" }}>
+                {averageTurnaroundTime.toFixed(2)}
+              </span>
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </>
   );
 }
 
-function Loader({fadeOut}) {
+function Loader({ fadeOut }) {
   return (
-    <center className={`content ${fadeOut ? 'fade-out' : 'fade-in'}`}>
+    <center className={`content ${fadeOut ? "fade-out" : "fade-in"}`}>
       <h1 className="App-header">
-        WELCOME TO OUR CALCULATOR <br /><br />
+        SCHEDULING ALGORITHM CALCULATOR <br />
+        <br />
         <l-grid size="70" speed="1.5" color="white"></l-grid>
       </h1>
     </center>
   );
 }
+const headerStyle = {
+  padding: "12px 15px",
+  backgroundColor: "#493628",
+  color: "#E4E0E1",
+  textTransform: "uppercase",
+  letterSpacing: "1px",
+  fontWeight: "bold",
+};
+
+const cellStyle = {
+  padding: "12px 15px",
+};
+
