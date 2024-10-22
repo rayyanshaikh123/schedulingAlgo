@@ -380,9 +380,9 @@ export default function App() {
                   <SRJNProcessTable
                     results={results}
                     isOpen={showProcessTableSRJN}
-                    onComplete={showAvgTimes}
+                   
                   />
-                  <AverageTime results={results} isOpen={showAvgTimes} />
+                  <AverageTime results={results} />
                 </div>
               )
             : showProcessTable && (
@@ -1020,7 +1020,7 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
 }
 }
 
-function AverageTime({ results, isOpen }) {
+function AverageTime({ results }) {
   let averageWaitingTime;
   let averageTurnaroundTime;
 
@@ -1044,7 +1044,7 @@ function AverageTime({ results, isOpen }) {
   }
   return (
     <>
-      {isOpen && (
+      
         <div className="average-time-container">
           <h4 className="mb-4 head" style={{ textAlign: 'center', color: '#493628' }}>
             Average Times
@@ -1075,7 +1075,7 @@ function AverageTime({ results, isOpen }) {
             </div>
           </motion.div>
         </div>
-      )}
+  
     </>
   );
 }
