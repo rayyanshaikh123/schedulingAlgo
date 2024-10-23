@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/schedulingAlgo/static/css/main.0cdcda51.css",
-    "main.js": "/schedulingAlgo/static/js/main.6bfe4827.js",
+    "main.js": "/schedulingAlgo/static/js/main.74f21a0b.js",
     "index.html": "/schedulingAlgo/index.html",
     "main.0cdcda51.css.map": "/schedulingAlgo/static/css/main.0cdcda51.css.map",
-    "main.6bfe4827.js.map": "/schedulingAlgo/static/js/main.6bfe4827.js.map"
+    "main.74f21a0b.js.map": "/schedulingAlgo/static/js/main.74f21a0b.js.map"
   },
   "entrypoints": [
     "static/css/main.0cdcda51.css",
-    "static/js/main.6bfe4827.js"
+    "static/js/main.74f21a0b.js"
   ]
 }
