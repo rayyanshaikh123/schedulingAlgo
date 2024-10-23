@@ -322,8 +322,7 @@ export default function App() {
         setShowProcessTableSRJN(true);
       }, results.ganttChart.length * 900);
     }
-   
-  }, [showGantt,  results.ganttChart]);
+  }, [showGantt, results.ganttChart]);
 
   return (
     <>
@@ -380,7 +379,6 @@ export default function App() {
                   <SRJNProcessTable
                     results={results}
                     isOpen={showProcessTableSRJN}
-                   
                   />
                   <AverageTime results={results} />
                 </div>
@@ -611,7 +609,9 @@ function Form({
               />
             </div>
           ))}
-  <p><b>Note:</b> To refresh the calculator change the stratergy...😁 </p>
+        <p>
+          <b>Note:</b> To refresh the calculator change the stratergy...😁{" "}
+        </p>
         <button
           type="submit"
           className="btn btn-primary"
@@ -640,7 +640,9 @@ function Table({ data, isOpen, onComplete, stratergy }) {
           <h4 className="head mb-4" style={{ textAlign: "center" }}>
             Process Table
           </h4>
-          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+          <div style={{ overflowX: "auto" }}>
+            {" "}
+            {/* Allows horizontal scroll for small screens */}
             <table
               className="table"
               style={{
@@ -723,7 +725,9 @@ function Table({ data, isOpen, onComplete, stratergy }) {
                         }}
                       >
                         <td style={{ padding: "12px 15px" }}>P{process}</td>
-                        <td style={{ padding: "12px 15px" }}>{item.burst[i]}</td>
+                        <td style={{ padding: "12px 15px" }}>
+                          {item.burst[i]}
+                        </td>
                         {stratergy === 5 && (
                           <td style={{ padding: "12px 15px" }}>
                             {item.arrival[i]}
@@ -743,103 +747,111 @@ function Table({ data, isOpen, onComplete, stratergy }) {
 }
 
 function GanttChart({ results, onComplete }) {
+  const n1 = Math.ceil(Math.random() * (255 - 0) + 0);
+  const n2 = Math.ceil(Math.random() * (255 - 0) + 0);
+  const n3 = Math.ceil(Math.random() * (255 - 0) + 0);
+  const ranColor = `rgb(${n1},${n2},${n3})`;
+  
   return (
- 
-      
-        <>
-          <h4
-            className="mb-4 head"
-            style={{ fontSize: "24px", textAlign: "center" }}
-          >
-            Gantt Chart
-          </h4>
-          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
-            <table
-              className="table table-bordered"
-              style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                borderRadius: "8px",
-                overflow: "hidden",
-              }}
-            >
-              <tbody>
-                <tr>
-                  {results.ganttChart.map((item, index) => (
-                    <motion.td
-                      key={index}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, delay: index * 0.8 }}
-                      onAnimationComplete={() => {
-                        if (index === results.ganttChart.length - 1) {
-                          setTimeout(onComplete, 10000);
-                        }
-                      }}
-                      style={{
-                        textAlign: "center",
-                        padding: "16px",
-                        position: "relative",
-                        backgroundColor: index % 2 === 0 ? "#D6C0B3" : "#fff", // Alternating row colors
-                        border: "1px solid #dee2e6",
-                        borderRadius: "4px",
-                        fontSize: "18px",
-                        fontWeight: "500",
-                      }}
-                    >
-                      <sup
-                        style={{
-                          display: "block",
-                          fontSize: "14px",
-                          fontWeight: "bold",
-                          marginBottom: "-2px",
-                        }}
-                      >
-                        {item.end - item.start}
-                      </sup>
-                      <p
-                        style={{
-                          margin: "10px 0 0",
-                          fontSize: "20px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        P{item.process}
-                      </p>
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: "5px",
-                          left: "5px",
-                          fontSize: "14px",
-                        }}
-                      >
-                        <sub>{item.start}</sub>
-                      </div>
-                      <div
-                        style={{
-                          position: "absolute",
-                          bottom: "5px",
-                          right: "5px",
-                          fontSize: "14px",
-                        }}
-                      >
-                        <sub>
-                          {index === results.ganttChart.length - 1
-                            ? item.end
-                            : results.ganttChart[index + 1].start}
-                        </sub>
-                      </div>
-                    </motion.td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </>
-      
-   
+    <>
+      <h4
+        className="mb-4 head"
+        style={{ fontSize: "24px", textAlign: "center" }}
+      >
+        Gantt Chart
+      </h4>
+      <div style={{ overflowX: "auto" }}>
+        {" "}
+        {/* Allows horizontal scroll for small screens */}
+        <table
+          className="table table-bordered"
+          style={{
+            width: "100%",
+            borderCollapse: "collapse",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            borderRadius: "8px",
+            overflow: "hidden",
+          }}
+        >
+          <tbody>
+            <tr>
+              {results.ganttChart.map((item, index) => (
+                <motion.td
+                  key={index}
+                  initial={{ opacity: 0, x: -50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8, delay: index * 0.8 }}
+                  onAnimationComplete={() => {
+                    if (index === results.ganttChart.length - 1) {
+                      setTimeout(onComplete, 10000);
+                    }
+                  }}
+                  style={{
+                    textAlign: "center",
+                    padding: "16px",
+                    position: "relative",
+                    backgroundColor: index % 2 === 0 ? "#D6C0B3" : "#fff", // Alternating row colors
+                    border: "1px solid #dee2e6",
+                    borderRadius: "4px",
+                    fontSize: "18px",
+                    fontWeight: "500",
+                    color:{ranColor},
+                  }}
+                >
+                  <sup
+                    style={{
+                      display: "block",
+                      fontSize: "14px",
+                      fontWeight: "bold",
+                      marginBottom: "-2px",
+                    color:{ranColor},
+
+                    }}
+                  >
+                    {item.end - item.start}
+                  </sup>
+                  <p
+                    style={{
+                      margin: "10px 0 0",
+                      fontSize: "20px",
+                      fontWeight: "bold",
+                      color:{ranColor},
+                    }}
+                  >
+                    P{item.process}
+                  </p>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "5px",
+                      left: "5px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <sub>{item.start}</sub>
+                  </div>
+                  <div
+                    style={{
+                      position: "absolute",
+                      bottom: "5px",
+                      right: "5px",
+                      fontSize: "14px",
+                      color:{ranColor},
+                    }}
+                  >
+                    <sub>
+                      {index === results.ganttChart.length - 1
+                        ? item.end
+                        : results.ganttChart[index + 1].start}
+                    </sub>
+                  </div>
+                </motion.td>
+              ))}
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </>
   );
 }
 
@@ -858,7 +870,9 @@ function ProcessTable({ results, isOpen, onComplete }) {
             >
               Process Table
             </h4>
-            <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
+            <div style={{ overflowX: "auto" }}>
+              {" "}
+              {/* Allows horizontal scroll for small screens */}
               <table
                 className="table"
                 style={{
@@ -895,19 +909,22 @@ function ProcessTable({ results, isOpen, onComplete }) {
                       key={index}
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 0.8, delay: index * 0.5 }}
+                      transition={{ duration: 1, delay: index * 0.8 }}
                       onAnimationComplete={() => {
                         if (index === results.ganttChart.length - 1) {
                           setTimeout(onComplete, 10000); // Delay completion
                         }
                       }}
                       style={{
-                        backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#E4E0E1",
+                        backgroundColor:
+                          index % 2 === 0 ? "#f2f2f2" : "#E4E0E1",
                       }}
                     >
                       <td style={cellStyle}>P{item.process}</td>
                       <td style={cellStyle}>{results.burst[index]}</td>
-                      <td style={cellStyle}>{Math.abs(results.waitingTime[index])}</td>
+                      <td style={cellStyle}>
+                        {Math.abs(results.waitingTime[index])}
+                      </td>
                       <td style={cellStyle}>{results.turnaroundTime[index]}</td>
                     </motion.tr>
                   ))}
@@ -946,84 +963,91 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
     return acc;
   }, []);
   try {
-  return (
-    <>
-      {isOpen && (
-        <>
-          <h4
-            className="my-4 head"
-            style={{
-              fontSize: "24px",
-              textAlign: "center",
-            }}
-          >
-            Process Table
-          </h4>
-          <div style={{ overflowX: 'auto' }}> {/* Allows horizontal scroll for small screens */}
-            <table
-              className="table"
+    return (
+      <>
+        {isOpen && (
+          <>
+            <h4
+              className="my-4 head"
               style={{
-                width: "100%",
-                borderCollapse: "collapse",
-                margin: "20px 0",
-                fontSize: "16px",
+                fontSize: "24px",
                 textAlign: "center",
-                backgroundColor: "#fdfdfd",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-                borderRadius: "10px",
-                overflow: "hidden",
               }}
             >
-              <thead>
-                <tr>
-                  <th style={headerStyle}>Process</th>
-                  <th style={headerStyle}>Arrival Time</th>
-                  <th style={headerStyle}>Burst Time</th>
-                  <th style={headerStyle}>Waiting Time</th>
-                  <th style={headerStyle}>Turnaround Time</th>
-                  <th style={headerStyle}>Completion Time</th>
-                </tr>
-              </thead>
-              <tbody>
-                {aggregatedResults.map((item, index) => (
-                  <motion.tr
-                    key={index}
-                    initial={{ opacity: 0, x: -50 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.5, delay: index * 0.2 }}
-                    onAnimationComplete={() => {
-                      if (index === aggregatedResults.length - 1) {
-                        setTimeout(onComplete, 10000); // Delay completion
-                      }
-                    }}
-                    style={{
-                      backgroundColor: index % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
-                    }}
-                  >
-                    <td style={cellStyle}>P{item.process}</td>
-                    <td style={cellStyle}>{item.arrivalTime}</td>
-                    <td style={cellStyle}>{item.burstTime}</td>
-                    <td style={cellStyle}>{item.waitingTime}</td>
-                    <td style={cellStyle}>{item.turnaroundTime}</td>
-                    <td style={cellStyle}>{item.completionTime}</td>
-                  </motion.tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
-    </>
-  );
-}catch(e){
-  console.log("Chill he sab")
-}
+              Process Table
+            </h4>
+            <div style={{ overflowX: "auto" }}>
+              {" "}
+              {/* Allows horizontal scroll for small screens */}
+              <table
+                className="table"
+                style={{
+                  width: "100%",
+                  borderCollapse: "collapse",
+                  margin: "20px 0",
+                  fontSize: "16px",
+                  textAlign: "center",
+                  backgroundColor: "#fdfdfd",
+                  boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                  borderRadius: "10px",
+                  overflow: "hidden",
+                }}
+              >
+                <thead>
+                  <tr>
+                    <th style={headerStyle}>Process</th>
+                    <th style={headerStyle}>Arrival Time</th>
+                    <th style={headerStyle}>Burst Time</th>
+                    <th style={headerStyle}>Waiting Time</th>
+                    <th style={headerStyle}>Turnaround Time</th>
+                    <th style={headerStyle}>Completion Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {aggregatedResults.map((item, index) => (
+                    <motion.tr
+                      key={index}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 1, delay: index * 0.8 }}
+                      
+                      onAnimationComplete={() => {
+                        if (index === aggregatedResults.length - 1) {
+                          setTimeout(onComplete, 10000); // Delay completion
+                        }
+                      }}
+                      style={{
+                        backgroundColor:
+                          index % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
+                      }}
+                    >
+                      <td style={cellStyle}>P{item.process}</td>
+                      <td style={cellStyle}>{item.arrivalTime}</td>
+                      <td style={cellStyle}>{item.burstTime}</td>
+                      <td style={cellStyle}>{item.waitingTime}</td>
+                      <td style={cellStyle}>{item.turnaroundTime}</td>
+                      <td style={cellStyle}>{item.completionTime}</td>
+                    </motion.tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </>
+    );
+  } catch (e) {
+    console.log("Chill he sab");
+  }
 }
 
 function AverageTime({ results }) {
   let averageWaitingTime;
   let averageTurnaroundTime;
-
+const [isOpen,setIsOpen] = useState(false);
+setTimeout(()=>{
+  setIsOpen(true);
+},2800)
   try {
     // Calculate average waiting time
     averageWaitingTime =
@@ -1042,42 +1066,65 @@ function AverageTime({ results }) {
   if (isNaN(averageWaitingTime) || isNaN(averageTurnaroundTime)) {
     return null; // Render nothing if any average is NaN
   }
-  return (
-    <>
-      
+  if(isOpen){
+    return (
+      <>
         <div className="average-time-container">
-          <h4 className="mb-4 head" style={{ textAlign: 'center', color: '#493628' }}>
+          <h4
+            className="mb-4 head"
+            style={{ textAlign: "center", color: "#493628" }}
+          >
             Average Times
           </h4>
           <motion.div
             className="average-time p-4 rounded"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 3 }}
+            transition={{ duration: 2 }}
             style={{
-              backgroundColor: '#493628',
-              boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-              borderRadius: '10px',
-              color:'#fff',
+              backgroundColor: "#493628",
+              boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+              borderRadius: "10px",
+              color: "#fff",
             }}
           >
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "18px",
+              }}
+            >
               <span>AVG WAITING TIME</span>
-              <span className="head" style={{ fontWeight: 'bold',color:"#fff" }}>
+              <span
+                className="head"
+                style={{ fontWeight: "bold", color: "#fff" }}
+              >
                 {averageWaitingTime.toFixed(2)}
               </span>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '18px', marginTop: '10px' }}>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                fontSize: "18px",
+                marginTop: "10px",
+              }}
+            >
               <span>AVG TURNAROUND TIME</span>
-              <span className="head" style={{ fontWeight: 'bold', color:"#fff" }}>
+              <span
+                className="head"
+                style={{ fontWeight: "bold", color: "#fff" }}
+              >
                 {averageTurnaroundTime.toFixed(2)}
               </span>
             </div>
           </motion.div>
         </div>
+      </>
+    );
+  } 
   
-    </>
-  );
 }
 
 function Loader({ fadeOut }) {
@@ -1103,4 +1150,3 @@ const headerStyle = {
 const cellStyle = {
   padding: "12px 15px",
 };
-
