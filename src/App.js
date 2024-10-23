@@ -9,10 +9,11 @@ export default function App() {
   const [showGantt, setShowGantt] = useState(false);
   const [showProcessTable, setShowProcessTable] = useState(false);
   const [showProcessTableSRJN, setShowProcessTableSRJN] = useState(false);
-  const [showAvgTimes, setShowAvgTimes] = useState(false);
+
   const [stratergy, setStratergy] = useState(1);
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
+  const [complete,setComplete] = useState(false)
   function handleData(date) {
     setData((data) => [...data, date]);
   }
@@ -53,7 +54,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    setShowAvgTimes(false);
+  
   };
 
   const calculateSJF = (data) => {
@@ -99,7 +100,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    setShowAvgTimes(false);
+    
   };
 
   const calculatePriority = (data) => {
@@ -146,7 +147,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    setShowAvgTimes(false);
+    
   };
   const calculateRoundRobin = (data, quantum) => {
     const n = data.process.length;
@@ -205,7 +206,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    setShowAvgTimes(false);
+   
   };
 
   const calculatePreemptiveSRJN = (data) => {
@@ -283,7 +284,7 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTableSRJN(false);
-    setShowAvgTimes(false);
+  
   };
   function refresh() {
     setData([]);
@@ -292,7 +293,7 @@ export default function App() {
     setShowGantt(false);
     setShowProcessTable(false);
     setShowProcessTableSRJN(false);
-    setShowAvgTimes(false);
+
   }
   useEffect(() => {
     // Simulate a loading process (e.g., fetching data)
@@ -320,6 +321,7 @@ export default function App() {
       setTimeout(() => {
         setShowProcessTable(true);
         setShowProcessTableSRJN(true);
+       
       }, results.ganttChart.length * 900);
     }
   }, [showGantt, results.ganttChart]);
@@ -378,9 +380,11 @@ export default function App() {
                 <div className="container-lg my-4 ">
                   <SRJNProcessTable
                     results={results}
+                    complete={complete}
+                    onComplete={setComplete}
                     isOpen={showProcessTableSRJN}
                   />
-                  <AverageTime results={results} />
+                  <AverageTime results={results}    complete={complete}/>
                 </div>
               )
             : showProcessTable && (
@@ -388,9 +392,10 @@ export default function App() {
                   <ProcessTable
                     results={results}
                     isOpen={showProcessTable}
-                    onComplete={showAvgTimes}
+                    complete={complete}
+                    onComplete={setComplete}
                   />
-                  <AverageTime results={results} isOpen={setShowAvgTimes} />
+                  <AverageTime results={results}   complete={complete}  />
                 </div>
               )}
         </div>
@@ -711,7 +716,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
                         key={i}
                         initial={{ opacity: 0, x: -50 }}
                         animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.5, delay: i * 0.2 }}
+                        transition={{ duration: 0.8, delay: i * 0.5 }}
                         onAnimationComplete={() => {
                           if (
                             i === item.process.length - 1 &&
@@ -857,6 +862,9 @@ function GanttChart({ results, onComplete }) {
 
 function ProcessTable({ results, isOpen, onComplete }) {
   try {
+    // Keep track of processes that have already been displayed
+    const displayedProcesses = new Set();
+
     return (
       <>
         {isOpen && (
@@ -904,30 +912,44 @@ function ProcessTable({ results, isOpen, onComplete }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {results.ganttChart.map((item, index) => (
-                    <motion.tr
-                      key={index}
-                      initial={{ opacity: 0, x: -50 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ duration: 1, delay: index * 0.8 }}
-                      onAnimationComplete={() => {
-                        if (index === results.ganttChart.length - 1) {
-                          setTimeout(onComplete, 10000); // Delay completion
-                        }
-                      }}
-                      style={{
-                        backgroundColor:
-                          index % 2 === 0 ? "#f2f2f2" : "#E4E0E1",
-                      }}
-                    >
-                      <td style={cellStyle}>P{item.process}</td>
-                      <td style={cellStyle}>{results.burst[index]}</td>
-                      <td style={cellStyle}>
-                        {Math.abs(results.waitingTime[index])}
-                      </td>
-                      <td style={cellStyle}>{results.turnaroundTime[index]}</td>
-                    </motion.tr>
-                  ))}
+                  {results.ganttChart
+                    .filter((item, index) => {
+                      // Filter out NaN waiting time and duplicate processes
+                      const isWaitingTimeValid = !isNaN(results.waitingTime[index]);
+                      const isDuplicate = displayedProcesses.has(item.process);
+
+                      if (isWaitingTimeValid && !isDuplicate) {
+                        displayedProcesses.add(item.process);
+                        return true;
+                      }
+                      return false;
+                    })
+                    .map((item, index) => (
+                      <motion.tr
+                        key={index}
+                        initial={{ opacity: 0, x: -50 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 1, delay: index * 0.8 }}
+                        onAnimationComplete={() => {
+                          if (index === results.ganttChart.length - 1) {
+                            onComplete(true);
+                          }
+                        }}
+                        style={{
+                          backgroundColor:
+                            index % 2 === 0 ? "#f2f2f2" : "#E4E0E1",
+                        }}
+                      >
+                        <td style={cellStyle}>P{item.process}</td>
+                        <td style={cellStyle}>{results.burst[index]}</td>
+                        <td style={cellStyle}>
+                          {Math.abs(results.waitingTime[index])}
+                        </td>
+                        <td style={cellStyle}>
+                          {results.turnaroundTime[index]}
+                        </td>
+                      </motion.tr>
+                    ))}
                 </tbody>
               </table>
             </div>
@@ -939,6 +961,7 @@ function ProcessTable({ results, isOpen, onComplete }) {
     console.log("Chill he sab!");
   }
 }
+
 
 function SRJNProcessTable({ results, isOpen, onComplete }) {
   if (!isOpen) return null;
@@ -1013,7 +1036,7 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
                       
                       onAnimationComplete={() => {
                         if (index === aggregatedResults.length - 1) {
-                          setTimeout(onComplete, 10000); // Delay completion
+                          onComplete(true);
                         }
                       }}
                       style={{
@@ -1041,13 +1064,16 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
   }
 }
 
-function AverageTime({ results }) {
+function AverageTime({ results, complete }) {
   let averageWaitingTime;
   let averageTurnaroundTime;
 const [isOpen,setIsOpen] = useState(false);
-setTimeout(()=>{
-  setIsOpen(true);
-},2800)
+if(complete){
+  setTimeout(()=>{
+    setIsOpen(true);
+
+  },3000)
+}
   try {
     // Calculate average waiting time
     averageWaitingTime =
