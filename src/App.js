@@ -1,5 +1,5 @@
 import "./App.css";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 
 export default function App() {
@@ -13,7 +13,9 @@ export default function App() {
   const [stratergy, setStratergy] = useState(1);
   const [loading, setLoading] = useState(true);
   const [fadeOut, setFadeOut] = useState(false);
-  const [complete,setComplete] = useState(false)
+  const [complete, setComplete] = useState(false);
+  const chartRef = useRef(null);
+
   function handleData(date) {
     setData((data) => [...data, date]);
   }
@@ -54,7 +56,6 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-  
   };
 
   const calculateSJF = (data) => {
@@ -100,7 +101,6 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    
   };
 
   const calculatePriority = (data) => {
@@ -147,7 +147,6 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-    
   };
   const calculateRoundRobin = (data, quantum) => {
     const n = data.process.length;
@@ -206,7 +205,6 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTable(false);
-   
   };
 
   const calculatePreemptiveSRJN = (data) => {
@@ -284,7 +282,6 @@ export default function App() {
     setResults(newResult);
     setShowGantt(false);
     setShowProcessTableSRJN(false);
-  
   };
   function refresh() {
     setData([]);
@@ -293,7 +290,6 @@ export default function App() {
     setShowGantt(false);
     setShowProcessTable(false);
     setShowProcessTableSRJN(false);
-
   }
   useEffect(() => {
     // Simulate a loading process (e.g., fetching data)
@@ -321,7 +317,6 @@ export default function App() {
       setTimeout(() => {
         setShowProcessTable(true);
         setShowProcessTableSRJN(true);
-       
       }, results.ganttChart.length * 900);
     }
   }, [showGantt, results.ganttChart]);
@@ -334,7 +329,9 @@ export default function App() {
         <div>
           <section className="my-4">
             <center>
-              <h1 className="display-4 header">SCHEDULING ALGORITHM SIMULATOR🧮</h1>
+              <h1 className="display-4 header">
+                SCHEDULING ALGORITHM SIMULATOR🧮
+              </h1>
             </center>
           </section>
 
@@ -357,6 +354,7 @@ export default function App() {
           {/* Table Section with container and margin */}
           <div className="container-lg my-4">
             <Table
+              chartRef={chartRef}
               data={data}
               stratergy={stratergy}
               isOpen={isOpen}
@@ -368,6 +366,8 @@ export default function App() {
           {showGantt && (
             <div className="container-lg my-4">
               <GanttChart
+                chartRef={chartRef}
+                isOpen={isOpen}
                 results={results}
                 onComplete={() => setShowProcessTable(true)}
               />
@@ -377,25 +377,39 @@ export default function App() {
           {/* Conditional rendering for Process Table and Average Time */}
           {stratergy === 5
             ? showProcessTableSRJN && (
-                <div className="container-lg my-4 ">
+                <div className="container-lg my-4 " style={{marginBottom: '50px'}}>
                   <SRJNProcessTable
+                    chartRef={chartRef}
                     results={results}
                     complete={complete}
                     onComplete={setComplete}
                     isOpen={showProcessTableSRJN}
                   />
-                  <AverageTime results={results}    complete={complete}/>
+
+                  <AverageTime
+                    results={results}
+                    chartRef={chartRef}
+                    complete={complete}
+                   
+
+                  />
                 </div>
               )
             : showProcessTable && (
-                <div className="container-lg my-4">
+                <div className="container-lg my-4" >
                   <ProcessTable
+                    chartRef={chartRef}
                     results={results}
                     isOpen={showProcessTable}
                     complete={complete}
                     onComplete={setComplete}
                   />
-                  <AverageTime results={results}   complete={complete}  />
+                  <AverageTime
+                    results={results}
+                    chartRef={chartRef}
+                    complete={complete}
+                    
+                  />
                 </div>
               )}
         </div>
@@ -637,7 +651,14 @@ function Form({
   );
 }
 
-function Table({ data, isOpen, onComplete, stratergy }) {
+function Table({ data, isOpen, onComplete, strategy, chartRef }) {
+  // Use effect to scroll into view when isOpen is true
+  useEffect(() => {
+    if (isOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chartRef, isOpen]);
+
   return (
     <>
       {isOpen && (
@@ -645,8 +666,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
           <h4 className="head mb-4" style={{ textAlign: "center" }}>
             Process Table
           </h4>
-          <div style={{ overflowX: "auto" }}>
-            {" "}
+          <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
             {/* Allows horizontal scroll for small screens */}
             <table
               className="table"
@@ -657,7 +677,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
                 fontSize: "16px",
                 textAlign: "center",
                 backgroundColor: "#fdfdfd",
-                boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+                boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
                 borderRadius: "10px",
                 overflow: "hidden",
               }}
@@ -692,7 +712,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
                   >
                     Burst Time
                   </th>
-                  {stratergy === 5 && (
+                  {strategy === 5 && (
                     <th
                       style={{
                         padding: "12px 15px",
@@ -733,7 +753,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
                         <td style={{ padding: "12px 15px" }}>
                           {item.burst[i]}
                         </td>
-                        {stratergy === 5 && (
+                        {strategy === 5 && (
                           <td style={{ padding: "12px 15px" }}>
                             {item.arrival[i]}
                           </td>
@@ -751,7 +771,7 @@ function Table({ data, isOpen, onComplete, stratergy }) {
   );
 }
 
-function GanttChart({ results, onComplete }) {
+function GanttChart({ results, onComplete, chartRef, isOpen }) {
   const [ranColor, setColors] = useState([]);
 
   // Generate random colors only once, when the component mounts
@@ -764,111 +784,123 @@ function GanttChart({ results, onComplete }) {
     });
     setColors(generatedColors);
   }, [results.ganttChart]);
-  
+
+  useEffect(() => {
+    if (isOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chartRef, isOpen]);
+
   return (
     <>
-      <h4
-        className="mb-4 head"
-        style={{ fontSize: "24px", textAlign: "center" }}
-      >
-        Gantt Chart
-      </h4>
-      <div style={{ overflowX: "auto" }}>
-        {" "}
-        {/* Allows horizontal scroll for small screens */}
-        <table
-          className="table table-bordered"
-          style={{
-            width: "100%",
-            borderCollapse: "collapse",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            borderRadius: "8px",
-            overflow: "hidden",
-          }}
-        >
-          <tbody>
-            <tr>
-              {results.ganttChart.map((item, index) => (
-                <motion.td
-                  key={index}
-                  initial={{ opacity: 0, x: -50 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8, delay: index * 0.8 }}
-                  onAnimationComplete={() => {
-                    if (index === results.ganttChart.length - 1) {
-                      setTimeout(onComplete, 10000);
-                    }
-                  }}
-                  style={{
-                    textAlign: "center",
-                    padding: "16px",
-                    position: "relative",
-                   
-                    border: "1px solid #dee2e6",
-                    borderRadius: "4px",
-                    fontSize: "18px",
-                    fontWeight: "500",
-                    backgroundColor: ranColor[index],
-                  }}
-                >
-                  <sup
-                    style={{
-                      display: "block",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                      marginBottom: "-2px",
-                   
+      {isOpen && (
+        <>
+          <h4
+            className="mb-4 head"
+            style={{ fontSize: "24px", textAlign: "center" }}
+          >
+            Gantt Chart
+          </h4>
+          <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
+            {" "}
+            {/* Allows horizontal scroll for small screens */}
+            <table
+              className="table table-bordered"
+              style={{
+                width: "100%",
+                borderCollapse: "collapse",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                borderRadius: "8px",
+                overflow: "hidden",
+              }}
+            >
+              <tbody>
+                <tr>
+                  {results.ganttChart.map((item, index) => (
+                    <motion.td
+                      key={index}
+                      initial={{ opacity: 0, x: -50 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ duration: 0.8, delay: index * 0.8 }}
+                      onAnimationComplete={() => {
+                        if (index === results.ganttChart.length - 1) {
+                          setTimeout(onComplete, 10000);
+                        }
+                      }}
+                      style={{
+                        textAlign: "center",
+                        padding: "16px",
+                        position: "relative",
 
-                    }}
-                  >
-                    {item.end - item.start}
-                  </sup>
-                  <p
-                    style={{
-                      margin: "10px 0 0",
-                      fontSize: "20px",
-                      fontWeight: "bold",
-                     
-                    }}
-                  >
-                    P{item.process}
-                  </p>
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "5px",
-                      left: "5px",
-                      fontSize: "14px",
-                    }}
-                  >
-                    <sub>{item.start}</sub>
-                  </div>
-                  <div
-                    style={{
-                      position: "absolute",
-                      bottom: "5px",
-                      right: "5px",
-                      fontSize: "14px",
-                     
-                    }}
-                  >
-                    <sub>
-                      {index === results.ganttChart.length - 1
-                        ? item.end
-                        : results.ganttChart[index + 1].start}
-                    </sub>
-                  </div>
-                </motion.td>
-              ))}
-            </tr>
-          </tbody>
-        </table>
-      </div>
+                        border: "1px solid #dee2e6",
+                        borderRadius: "4px",
+                        fontSize: "18px",
+                        fontWeight: "500",
+                        backgroundColor: ranColor[index],
+                      }}
+                    >
+                      <sup
+                        style={{
+                          display: "block",
+                          fontSize: "14px",
+                          fontWeight: "bold",
+                          marginBottom: "-2px",
+                        }}
+                      >
+                        {item.end - item.start}
+                      </sup>
+                      <p
+                        style={{
+                          margin: "10px 0 0",
+                          fontSize: "20px",
+                          fontWeight: "bold",
+                        }}
+                      >
+                        P{item.process}
+                      </p>
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "5px",
+                          left: "5px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <sub>{item.start}</sub>
+                      </div>
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: "5px",
+                          right: "5px",
+                          fontSize: "14px",
+                        }}
+                      >
+                        <sub>
+                          {index === results.ganttChart.length - 1
+                            ? item.end
+                            : results.ganttChart[index + 1].start}
+                        </sub>
+                      </div>
+                    </motion.td>
+                  ))}
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </>
   );
 }
 
-function ProcessTable({ results, isOpen, onComplete }) {
+function ProcessTable({ results, isOpen, onComplete, chartRef }) {
+
+  useEffect(() => {
+    if (isOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chartRef, isOpen]);
   try {
     // Keep track of processes that have already been displayed
     const displayedProcesses = new Set();
@@ -878,7 +910,7 @@ function ProcessTable({ results, isOpen, onComplete }) {
         {isOpen && (
           <>
             <h4
-              className="my-4 head"
+              className=" head"
               style={{
                 fontSize: "24px",
                 textAlign: "center",
@@ -886,7 +918,7 @@ function ProcessTable({ results, isOpen, onComplete }) {
             >
               Process Table
             </h4>
-            <div style={{ overflowX: "auto" }}>
+            <div style={{ overflowX: "auto", marginBottom: '30px' }} ref={chartRef}>
               {" "}
               {/* Allows horizontal scroll for small screens */}
               <table
@@ -923,7 +955,9 @@ function ProcessTable({ results, isOpen, onComplete }) {
                   {results.ganttChart
                     .filter((item, index) => {
                       // Filter out NaN waiting time and duplicate processes
-                      const isWaitingTimeValid = !isNaN(results.waitingTime[index]);
+                      const isWaitingTimeValid = !isNaN(
+                        results.waitingTime[index]
+                      );
                       const isDuplicate = displayedProcesses.has(item.process);
 
                       if (isWaitingTimeValid && !isDuplicate) {
@@ -970,8 +1004,13 @@ function ProcessTable({ results, isOpen, onComplete }) {
   }
 }
 
+function SRJNProcessTable({ results, isOpen, onComplete, chartRef }) {
 
-function SRJNProcessTable({ results, isOpen, onComplete }) {
+  useEffect(() => {
+    if (isOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chartRef, isOpen]);
   if (!isOpen) return null;
 
   // Create an array to store the aggregated data for each process
@@ -999,7 +1038,7 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
         {isOpen && (
           <>
             <h4
-              className="my-4 head"
+              className=" head"
               style={{
                 fontSize: "24px",
                 textAlign: "center",
@@ -1007,7 +1046,7 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
             >
               Process Table
             </h4>
-            <div style={{ overflowX: "auto" }}>
+            <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
               {" "}
               {/* Allows horizontal scroll for small screens */}
               <table
@@ -1041,7 +1080,6 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
                       initial={{ opacity: 0, x: -50 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ duration: 1, delay: index * 0.8 }}
-                      
                       onAnimationComplete={() => {
                         if (index === aggregatedResults.length - 1) {
                           onComplete(true);
@@ -1072,16 +1110,20 @@ function SRJNProcessTable({ results, isOpen, onComplete }) {
   }
 }
 
-function AverageTime({ results, complete }) {
+function AverageTime({ results, complete, chartRef }) {
   let averageWaitingTime;
   let averageTurnaroundTime;
-const [isOpen,setIsOpen] = useState(false);
-if(complete){
-  setTimeout(()=>{
-    setIsOpen(true);
-
-  },3000)
-}
+  const [isOpen, setIsOpen] = useState(false);
+  if (complete) {
+    setTimeout(() => {
+      setIsOpen(true);
+    }, 2000);
+  }
+  useEffect(() => {
+    if (isOpen && chartRef.current) {
+      chartRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chartRef, isOpen]);
   try {
     // Calculate average waiting time
     averageWaitingTime =
@@ -1100,10 +1142,10 @@ if(complete){
   if (isNaN(averageWaitingTime) || isNaN(averageTurnaroundTime)) {
     return null; // Render nothing if any average is NaN
   }
-  if(isOpen){
+  if (isOpen) {
     return (
       <>
-        <div className="average-time-container">
+        <div className="average-time-container" style={{marginBottom:'30px' }} ref={chartRef}>
           <h4
             className="mb-4 head"
             style={{ textAlign: "center", color: "#493628" }}
@@ -1157,8 +1199,7 @@ if(complete){
         </div>
       </>
     );
-  } 
-  
+  }
 }
 
 function Loader({ fadeOut }) {
