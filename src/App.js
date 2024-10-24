@@ -334,7 +334,7 @@ export default function App() {
         <div>
           <section className="my-4">
             <center>
-              <h1 className="display-4 header">OSY MICROPROJECT🧮</h1>
+              <h1 className="display-4 header">SCHEDULING ALGORITHM SIMULATOR🧮</h1>
             </center>
           </section>
 
@@ -752,10 +752,18 @@ function Table({ data, isOpen, onComplete, stratergy }) {
 }
 
 function GanttChart({ results, onComplete }) {
-  const n1 = Math.ceil(Math.random() * (255 - 0) + 0);
-  const n2 = Math.ceil(Math.random() * (255 - 0) + 0);
-  const n3 = Math.ceil(Math.random() * (255 - 0) + 0);
-  const ranColor = `rgb(${n1},${n2},${n3})`;
+  const [ranColor, setColors] = useState([]);
+
+  // Generate random colors only once, when the component mounts
+  useEffect(() => {
+    const generatedColors = results.ganttChart.map(() => {
+      const n1 = Math.ceil(Math.random() * 255);
+      const n2 = Math.ceil(Math.random() * 255);
+      const n3 = Math.ceil(Math.random() * 255);
+      return `rgb(${n1},${n2},${n3})`;
+    });
+    setColors(generatedColors);
+  }, [results.ganttChart]);
   
   return (
     <>
@@ -795,12 +803,12 @@ function GanttChart({ results, onComplete }) {
                     textAlign: "center",
                     padding: "16px",
                     position: "relative",
-                    backgroundColor: index % 2 === 0 ? "#D6C0B3" : "#fff", // Alternating row colors
+                   
                     border: "1px solid #dee2e6",
                     borderRadius: "4px",
                     fontSize: "18px",
                     fontWeight: "500",
-                    color:{ranColor},
+                    backgroundColor: ranColor[index],
                   }}
                 >
                   <sup
@@ -809,7 +817,7 @@ function GanttChart({ results, onComplete }) {
                       fontSize: "14px",
                       fontWeight: "bold",
                       marginBottom: "-2px",
-                    color:{ranColor},
+                   
 
                     }}
                   >
@@ -820,7 +828,7 @@ function GanttChart({ results, onComplete }) {
                       margin: "10px 0 0",
                       fontSize: "20px",
                       fontWeight: "bold",
-                      color:{ranColor},
+                     
                     }}
                   >
                     P{item.process}
@@ -841,7 +849,7 @@ function GanttChart({ results, onComplete }) {
                       bottom: "5px",
                       right: "5px",
                       fontSize: "14px",
-                      color:{ranColor},
+                     
                     }}
                   >
                     <sub>
