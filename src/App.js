@@ -663,7 +663,7 @@ function Table({ data, isOpen, onComplete, strategy, chartRef }) {
     <>
       {isOpen && (
         <>
-          <h4 className="head mb-4" style={{ textAlign: "center" }}>
+          <h4 className="head " style={{ textAlign: "center" }}>
             Process Table
           </h4>
           <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
