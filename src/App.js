@@ -513,7 +513,7 @@ function Form({
             <option value="2">Shortest Job First</option>
             <option value="3">Priority</option>
             <option value="4">Round Robin</option>
-            <option value="5">Preemptive</option>
+            <option value="5">Preemptive SRJN</option>
           </select>
         </div>
 
