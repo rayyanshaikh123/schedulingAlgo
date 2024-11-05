@@ -10,7 +10,7 @@ export default function ProcessTable({ results, isOpen, onComplete, chartRef }) 
       }
     }, [chartRef, isOpen]);
     try {
-      // Keep track of processes that have already been displayed
+     
       const displayedProcesses = new Set();
   
       return (
@@ -28,7 +28,7 @@ export default function ProcessTable({ results, isOpen, onComplete, chartRef }) 
               </h4>
               <div style={{ overflowX: "auto", marginBottom: '30px' }} ref={chartRef}>
                 {" "}
-                {/* Allows horizontal scroll for small screens */}
+              
                 <table
                   className="table"
                   style={{
@@ -62,7 +62,7 @@ export default function ProcessTable({ results, isOpen, onComplete, chartRef }) 
                   <tbody>
                     {results.ganttChart
                       .filter((item, index) => {
-                        // Filter out NaN waiting time and duplicate processes
+                      
                         const isWaitingTimeValid = !isNaN(
                           results.waitingTime[index]
                         );

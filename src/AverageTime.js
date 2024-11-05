@@ -17,12 +17,12 @@ export default function AverageTime({ results, complete, chartRef }) {
       }
     }, [chartRef, isOpen]);
     try {
-      // Calculate average waiting time
+     
       averageWaitingTime =
         results.waitingTime.reduce((acc, time) => acc + time, 0) /
         results.waitingTime.length;
   
-      // Calculate average turnaround time
+
       averageTurnaroundTime =
         results.turnaroundTime.reduce((acc, time) => acc + time, 0) /
         results.turnaroundTime.length;
@@ -30,9 +30,9 @@ export default function AverageTime({ results, complete, chartRef }) {
       console.log("Chill he bhai!");
     }
   
-    // Check if either average is NaN
+ 
     if (isNaN(averageWaitingTime) || isNaN(averageTurnaroundTime)) {
-      return null; // Render nothing if any average is NaN
+      return null; 
     }
     if (isOpen) {
       return (

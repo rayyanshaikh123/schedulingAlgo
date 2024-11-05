@@ -72,16 +72,16 @@ export default function App() {
     let startTime = Array(n).fill(0);
     let completionTime = Array(n).fill(0);
 
-    // Create a copy of the processes array to sort based on burst time
+   
     const processes = data.process.map((process, index) => ({
       process,
       burst: data.burst[index],
     }));
 
-    // Sort the processes based on burst time
+
     processes.sort((a, b) => a.burst - b.burst);
 
-    // Calculate waiting time and completion time
+   
     for (let i = 1; i < n; i++) {
       waitingTime[i] = waitingTime[i - 1] + processes[i - 1].burst;
     }
@@ -117,17 +117,17 @@ export default function App() {
     let startTime = Array(n).fill(0);
     let completionTime = Array(n).fill(0);
 
-    // Create a combined array of processes and their priorities
+    
     const processes = data.process.map((process, index) => ({
       process,
       burst: data.burst[index],
       priority: data.priority[index],
     }));
 
-    // Sort the processes based on priority (lower number = higher priority)
+   
     processes.sort((a, b) => a.priority - b.priority);
 
-    // Calculate waiting time and completion time
+   
     for (let i = 1; i < n; i++) {
       waitingTime[i] = waitingTime[i - 1] + processes[i - 1].burst;
     }
@@ -163,14 +163,14 @@ export default function App() {
     let time = 0;
     let ganttChart = [];
 
-    let completed = 0; // Track completed processes
-    let currentIndex = 0; // Track which process is currently executing
+    let completed = 0; 
+    let currentIndex = 0; 
 
     while (completed < n) {
       const burstLeft = remainingBurst[currentIndex];
 
       if (burstLeft > 0) {
-        let startTime = time; // The process starts now
+        let startTime = time; 
         if (burstLeft > quantum) {
           time += quantum;
           remainingBurst[currentIndex] -= quantum;
@@ -187,18 +187,18 @@ export default function App() {
         });
       }
 
-      currentIndex = (currentIndex + 1) % n; // Round robin: move to the next process
+      currentIndex = (currentIndex + 1) % n; 
     }
 
-    // Calculate waiting time and turnaround time
+    
     for (let i = 0; i < n; i++) {
       let processBursts = ganttChart.filter(
         (g) => g.process === data.process[i]
       );
 
-      // Completion time of the process is the last end time in the Gantt chart
+    
       let completionTime = processBursts[processBursts.length - 1].end;
-      turnaroundTime[i] = completionTime - 0; // Assuming arrival time is 0
+      turnaroundTime[i] = completionTime - 0; 
       waitingTime[i] = turnaroundTime[i] - data.burst[i];
     }
 
@@ -220,18 +220,18 @@ export default function App() {
     const burstTime = data.burst;
     let remainingBurst = [...burstTime];
 
-    let waitingTime = Array(n).fill(0); // Waiting time for each process
-    let turnaroundTime = Array(n).fill(0); // Turnaround time for each process
-    let completionTime = Array(n).fill(0); // Completion time for each process
-    let ganttChart = []; // Gantt chart to track process execution
-    let currentTime = 0; // Current time of the system
-    let completed = 0; // Number of completed processes
-    let shortest = -1; // Index of the process with the shortest remaining burst time
-    let minBurst = Infinity; // Minimum burst time found
-    let isProcessRunning = false; // Indicates if any process is running
+    let waitingTime = Array(n).fill(0); 
+    let turnaroundTime = Array(n).fill(0); 
+    let completionTime = Array(n).fill(0); 
+    let ganttChart = []; 
+    let currentTime = 0; 
+    let completed = 0; 
+    let shortest = -1; 
+    let minBurst = Infinity; 
+    let isProcessRunning = false; 
 
     while (completed !== n) {
-      // Find the process with the shortest remaining burst time that has arrived
+     
       for (let i = 0; i < n; i++) {
         if (
           arrivalTime[i] <= currentTime &&
@@ -244,28 +244,28 @@ export default function App() {
         }
       }
 
-      // If no process is running, increment the current time
+   
       if (!isProcessRunning) {
         currentTime++;
         continue;
       }
 
-      // Decrease the remaining burst time of the selected process
+      
       remainingBurst[shortest]--;
-      minBurst = remainingBurst[shortest]; // Update the minimum burst
-      if (minBurst === 0) minBurst = Infinity; // Reset the minBurst when the current process completes
+      minBurst = remainingBurst[shortest]; 
+      if (minBurst === 0) minBurst = Infinity;
 
-      // Track the process execution in Gantt chart
+   
       ganttChart.push({
-        process: shortest + 1, // P1, P2, etc.
+        process: shortest + 1, 
         start: currentTime,
         end: currentTime + 1,
       });
 
-      // Update current time
+   
       currentTime++;
 
-      // If the process has completed
+      
       if (remainingBurst[shortest] === 0) {
         completed++;
         isProcessRunning = false;
@@ -276,13 +276,13 @@ export default function App() {
       }
     }
 
-    // Final result for Gantt chart, waiting time, and turnaround time
+  
     const newResult = {
       burst: burstTime,
       waitingTime,
       turnaroundTime,
       ganttChart,
-      completionTime, // Add this to the result
+      completionTime, 
       arrival: arrivalTime,
     };
 
@@ -299,18 +299,18 @@ export default function App() {
     setShowProcessTableSRJN(false);
   }
   useEffect(() => {
-    // Simulate a loading process (e.g., fetching data)
+    
     const timer = setTimeout(() => {
-      setLoading(false); // Change loading state after 3 seconds
+      setLoading(false); 
     }, 4000);
     const fadeInTimer = setTimeout(() => {
-      setFadeOut(true); // Start fade out effect after loading completes
-    }, 3100); // Adjust timing based on your loading duration
+      setFadeOut(true); 
+    }, 3100); 
 
     return () => {
       clearTimeout(timer);
       clearTimeout(fadeInTimer);
-    }; // Cleanup timers
+    }; 
   }, []);
 
   useEffect(() => {

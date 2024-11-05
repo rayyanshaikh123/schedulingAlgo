@@ -2,7 +2,7 @@ import React, {  useEffect } from "react";
 import { motion } from "framer-motion";
 
 export default function Table({ data, isOpen, onComplete, strategy, chartRef }) {
-    // Use effect to scroll into view when isOpen is true
+  
     useEffect(() => {
       if (isOpen && chartRef.current) {
         chartRef.current.scrollIntoView({ behavior: "smooth" });
@@ -35,7 +35,7 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                 <thead>
                   <tr
                     style={{
-                      // Header text color
+                    
                       textTransform: "uppercase",
                       letterSpacing: "1px",
                       fontWeight: "bold",
@@ -44,7 +44,7 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                     <th
                       style={{
                         padding: "12px 15px",
-                        backgroundColor: "#493628", // Table header background color
+                        backgroundColor: "#493628", 
                         color: "#E4E0E1",
                       }}
                     >
@@ -53,7 +53,7 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                     <th
                       style={{
                         padding: "12px 15px",
-                        backgroundColor: "#493628", // Table header background color
+                        backgroundColor: "#493628", 
                         color: "#E4E0E1",
                         textTransform: "uppercase",
                         letterSpacing: "1px",
@@ -66,7 +66,7 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                       <th
                         style={{
                           padding: "12px 15px",
-                          backgroundColor: "#493628", // Table header background color
+                          backgroundColor: "#493628", 
                           color: "#E4E0E1",
                           textTransform: "uppercase",
                           letterSpacing: "1px",
@@ -96,7 +96,7 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                             }
                           }}
                           style={{
-                            backgroundColor: i % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
+                            backgroundColor: i % 2 === 0 ? "#f2f2f2" : "#E4E0E1", 
                           }}
                         >
                           <td style={{ padding: "12px 15px" }}>P{process}</td>

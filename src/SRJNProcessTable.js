@@ -10,11 +10,11 @@ export default function SRJNProcessTable({ results, isOpen, onComplete, chartRef
   }, [chartRef, isOpen]);
   if (!isOpen) return null;
 
-  // Create an array to store the aggregated data for each process
+  
   const aggregatedResults = results.ganttChart.reduce((acc, item) => {
     const processIndex = item.process - 1;
 
-    // If the process doesn't exist in the accumulator, initialize its values
+   
     if (!acc[processIndex]) {
       acc[processIndex] = {
         process: item.process,
@@ -26,7 +26,7 @@ export default function SRJNProcessTable({ results, isOpen, onComplete, chartRef
       };
     }
 
-    // If we need to aggregate further (e.g., sum burst times if applicable), do it here.
+    
     return acc;
   }, []);
   try {
@@ -45,7 +45,7 @@ export default function SRJNProcessTable({ results, isOpen, onComplete, chartRef
             </h4>
             <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
               {" "}
-              {/* Allows horizontal scroll for small screens */}
+             
               <table
                 className="table"
                 style={{
@@ -84,7 +84,7 @@ export default function SRJNProcessTable({ results, isOpen, onComplete, chartRef
                       }}
                       style={{
                         backgroundColor:
-                          index % 2 === 0 ? "#f2f2f2" : "#E4E0E1", // Alternating row colors
+                          index % 2 === 0 ? "#f2f2f2" : "#E4E0E1", 
                       }}
                     >
                       <td style={cellStyle}>P{item.process}</td>
