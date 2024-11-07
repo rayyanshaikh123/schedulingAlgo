@@ -2,4 +2,4 @@
 User-agent: *
 Disallow:
 
-Sitemap: https://rayyanshaikh123.github.io/schedulingAlgo/sitemap.xml
+
