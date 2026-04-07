@@ -274,11 +274,11 @@ export default function App() {
   useEffect(() => {
     const fadeTimer = setTimeout(() => {
       setFadeOut(true);
-    }, 1600);
+    }, 6100);
 
     const loadTimer = setTimeout(() => {
       setLoading(false);
-    }, 2300);
+    }, 6900);
 
     return () => {
       clearTimeout(fadeTimer);

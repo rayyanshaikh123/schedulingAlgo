@@ -2,16 +2,16 @@ import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
 const PASTEL_PALETTE = [
-  "#ffd6e0",
-  "#ffe5c4",
-  "#fff1b8",
-  "#d8f3dc",
-  "#cde7ff",
-  "#e9d5ff",
-  "#b8f2e6",
-  "#ffc9de",
-  "#e7f0b8",
-  "#f5d0fe",
+  "#f3ded2",
+  "#e9dccf",
+  "#ddd3c8",
+  "#efe6dd",
+  "#e2d7cd",
+  "#d8ccc1",
+  "#f0e8df",
+  "#e7ddd3",
+  "#d4c8bc",
+  "#ece2d8",
 ];
 
 export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
@@ -81,7 +81,7 @@ export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
                         borderRadius: "4px",
                         fontSize: "18px",
                         fontWeight: "500",
-                        color: "#2d2040",
+                        color: "#2f2a26",
                         backgroundColor: colorMap[item.process],
                       }}
                     >
