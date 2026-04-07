@@ -16,66 +16,14 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
             <h4 className="head " style={{ textAlign: "center" }}>
               Process Table
             </h4>
-            <div style={{ overflowX: "auto", marginBottom: '30px'  }} ref={chartRef}>
-              {/* Allows horizontal scroll for small screens */}
-              <table
-                className="table"
-                style={{
-                  width: "100%",
-                  borderCollapse: "collapse",
-                  margin: "20px 0",
-                  fontSize: "16px",
-                  textAlign: "center",
-                  backgroundColor: "#fdfdfd",
-                  boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-                  borderRadius: "10px",
-                  overflow: "hidden",
-                }}
-              >
+            <div className="table-wrap" ref={chartRef}>
+              <table className="table scheduler-table">
                 <thead>
-                  <tr
-                    style={{
-                    
-                      textTransform: "uppercase",
-                      letterSpacing: "1px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    <th
-                      style={{
-                        padding: "12px 15px",
-                        backgroundColor: "#493628", 
-                        color: "#E4E0E1",
-                      }}
-                    >
-                      Process
-                    </th>
-                    <th
-                      style={{
-                        padding: "12px 15px",
-                        backgroundColor: "#493628", 
-                        color: "#E4E0E1",
-                        textTransform: "uppercase",
-                        letterSpacing: "1px",
-                        fontWeight: "bold",
-                      }}
-                    >
-                      Burst Time
-                    </th>
-                    {strategy === 5 && (
-                      <th
-                        style={{
-                          padding: "12px 15px",
-                          backgroundColor: "#493628", 
-                          color: "#E4E0E1",
-                          textTransform: "uppercase",
-                          letterSpacing: "1px",
-                          fontWeight: "bold",
-                        }}
-                      >
-                        Arrival Time
-                      </th>
-                    )}
+                  <tr>
+                    <th>Process</th>
+                    <th>Burst Time</th>
+                    <th>Arrival Time</th>
+                    {strategy === 3 && <th>Priority</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -95,19 +43,12 @@ export default function Table({ data, isOpen, onComplete, strategy, chartRef }) 
                               onComplete();
                             }
                           }}
-                          style={{
-                            backgroundColor: i % 2 === 0 ? "#f2f2f2" : "#E4E0E1", 
-                          }}
+                          className={i % 2 === 0 ? "row-even" : "row-odd"}
                         >
-                          <td style={{ padding: "12px 15px" }}>P{process}</td>
-                          <td style={{ padding: "12px 15px" }}>
-                            {item.burst[i]}
-                          </td>
-                          {strategy === 5 && (
-                            <td style={{ padding: "12px 15px" }}>
-                              {item.arrival[i]}
-                            </td>
-                          )}
+                          <td>P{process}</td>
+                          <td>{item.burst[i]}</td>
+                          <td>{item.arrival[i]}</td>
+                          {strategy === 3 && <td>{item.priority[i]}</td>}
                         </motion.tr>
                       ))}
                     </React.Fragment>

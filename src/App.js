@@ -5,7 +5,6 @@ import Form from "./Form";
 import AverageTime from "./AverageTime";
 import GanttChart from "./GanttChart";
 import ProcessTable from "./ProcessTable";
-import SRJNProcessTable from "./SRJNProcessTable";
 import Table from "./Table";
 import Loader from "./Loader";
 
@@ -15,7 +14,6 @@ export default function App() {
   const [results, setResults] = useState({});
   const [showGantt, setShowGantt] = useState(false);
   const [showProcessTable, setShowProcessTable] = useState(false);
-  const [showProcessTableSRJN, setShowProcessTableSRJN] = useState(false);
 
   const [stratergy, setStratergy] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -23,308 +21,284 @@ export default function App() {
   const [complete, setComplete] = useState(false);
   const chartRef = useRef(null);
 
-  function handleData(date) {
-    setData((data) => [...data, date]);
+  const applyResult = (newResult) => {
+    setResults(newResult);
+    setShowGantt(false);
+    setShowProcessTable(false);
+    setComplete(false);
+  };
+
+  const buildResult = (processes, ganttChart) => {
+    const n = processes.length;
+    const process = Array(n).fill(0);
+    const arrival = Array(n).fill(0);
+    const burst = Array(n).fill(0);
+    const priority = Array(n).fill(0);
+    const waitingTime = Array(n).fill(0);
+    const turnaroundTime = Array(n).fill(0);
+    const completionTime = Array(n).fill(0);
+
+    processes.forEach((proc) => {
+      const idx = proc.process - 1;
+      process[idx] = proc.process;
+      arrival[idx] = proc.arrival;
+      burst[idx] = proc.burst;
+      priority[idx] = proc.priority;
+      completionTime[idx] = proc.completionTime;
+      turnaroundTime[idx] = completionTime[idx] - arrival[idx];
+      waitingTime[idx] = turnaroundTime[idx] - burst[idx];
+    });
+
+    return {
+      process,
+      arrival,
+      burst,
+      priority,
+      waitingTime,
+      turnaroundTime,
+      completionTime,
+      ganttChart,
+    };
+  };
+
+  const mapInput = (inputData) =>
+    inputData.process.map((process, index) => ({
+      process,
+      burst: Number(inputData.burst[index] ?? 0),
+      arrival: Number(inputData.arrival[index] ?? 0),
+      priority: Number(inputData.priority[index] ?? 0),
+      completionTime: 0,
+    }));
+
+  function handleData(item) {
+    setData([item]);
   }
-  function handleOpen(oen) {
-    setIsOpen(oen);
+
+  function handleOpen(open) {
+    setIsOpen(open);
   }
 
-  const calculateFCFS = (data) => {
-    const n = data.process.length;
-    let waitingTime = Array(n).fill(0);
-    let turnaroundTime = Array(n).fill(0);
-    let startTime = Array(n).fill(0);
-    let completionTime = Array(n).fill(0);
+  const calculateFCFS = (inputData) => {
+    const processes = mapInput(inputData).sort(
+      (a, b) => a.arrival - b.arrival || a.process - b.process
+    );
+    const ganttChart = [];
+    let currentTime = 0;
 
-    for (let i = 1; i < n; i++) {
-      waitingTime[i] = waitingTime[i - 1] + data.burst[i - 1];
-    }
+    processes.forEach((proc) => {
+      const start = Math.max(currentTime, proc.arrival);
+      const end = start + proc.burst;
+      proc.completionTime = end;
+      currentTime = end;
+      ganttChart.push({ process: proc.process, start, end });
+    });
 
-    for (let i = 0; i < n; i++) {
-      turnaroundTime[i] = waitingTime[i] + data.burst[i];
-      startTime[i] = i === 0 ? 0 : completionTime[i - 1];
-      completionTime[i] = startTime[i] + data.burst[i];
-    }
-
-    const ganttChart = data.process.map((process, index) => ({
-      process,
-      start: startTime[index],
-      end: completionTime[index],
-    }));
-
-    const newResult = {
-      burst: data.burst,
-      waitingTime,
-      turnaroundTime,
-      ganttChart,
-    };
-
-    setResults(newResult);
-    setShowGantt(false);
-    setShowProcessTable(false);
+    applyResult(buildResult(processes, ganttChart));
   };
 
-  const calculateSJF = (data) => {
-    const n = data.process.length;
-    let waitingTime = Array(n).fill(0);
-    let turnaroundTime = Array(n).fill(0);
-    let startTime = Array(n).fill(0);
-    let completionTime = Array(n).fill(0);
+  const calculateSJF = (inputData) => {
+    const processes = mapInput(inputData).map((proc) => ({ ...proc, done: false }));
+    const ganttChart = [];
+    let completed = 0;
+    let currentTime = Math.min(...processes.map((proc) => proc.arrival));
 
-   
-    const processes = data.process.map((process, index) => ({
-      process,
-      burst: data.burst[index],
-    }));
+    while (completed < processes.length) {
+      const timeCursor = currentTime;
+      const ready = processes.filter((proc) => !proc.done && proc.arrival <= timeCursor);
 
-
-    processes.sort((a, b) => a.burst - b.burst);
-
-   
-    for (let i = 1; i < n; i++) {
-      waitingTime[i] = waitingTime[i - 1] + processes[i - 1].burst;
-    }
-
-    for (let i = 0; i < n; i++) {
-      turnaroundTime[i] = waitingTime[i] + processes[i].burst;
-      startTime[i] = i === 0 ? 0 : completionTime[i - 1];
-      completionTime[i] = startTime[i] + processes[i].burst;
-    }
-
-    const ganttChart = processes.map((proc, index) => ({
-      process: proc.process,
-      start: startTime[index],
-      end: completionTime[index],
-    }));
-
-    const newResult = {
-      burst: processes.map((proc) => proc.burst),
-      waitingTime,
-      turnaroundTime,
-      ganttChart,
-    };
-
-    setResults(newResult);
-    setShowGantt(false);
-    setShowProcessTable(false);
-  };
-
-  const calculatePriority = (data) => {
-    const n = data.process.length;
-    let waitingTime = Array(n).fill(0);
-    let turnaroundTime = Array(n).fill(0);
-    let startTime = Array(n).fill(0);
-    let completionTime = Array(n).fill(0);
-
-    
-    const processes = data.process.map((process, index) => ({
-      process,
-      burst: data.burst[index],
-      priority: data.priority[index],
-    }));
-
-   
-    processes.sort((a, b) => a.priority - b.priority);
-
-   
-    for (let i = 1; i < n; i++) {
-      waitingTime[i] = waitingTime[i - 1] + processes[i - 1].burst;
-    }
-
-    for (let i = 0; i < n; i++) {
-      turnaroundTime[i] = waitingTime[i] + processes[i].burst;
-      startTime[i] = i === 0 ? 0 : completionTime[i - 1];
-      completionTime[i] = startTime[i] + processes[i].burst;
-    }
-
-    const ganttChart = processes.map((proc, index) => ({
-      process: proc.process,
-      start: startTime[index],
-      end: completionTime[index],
-    }));
-
-    const newResult = {
-      burst: processes.map((proc) => proc.burst),
-      waitingTime,
-      turnaroundTime,
-      ganttChart,
-    };
-
-    setResults(newResult);
-    setShowGantt(false);
-    setShowProcessTable(false);
-  };
-  const calculateRoundRobin = (data, quantum) => {
-    const n = data.process.length;
-    let waitingTime = Array(n).fill(0);
-    let turnaroundTime = Array(n).fill(0);
-    let remainingBurst = [...data.burst];
-    let time = 0;
-    let ganttChart = [];
-
-    let completed = 0; 
-    let currentIndex = 0; 
-
-    while (completed < n) {
-      const burstLeft = remainingBurst[currentIndex];
-
-      if (burstLeft > 0) {
-        let startTime = time; 
-        if (burstLeft > quantum) {
-          time += quantum;
-          remainingBurst[currentIndex] -= quantum;
-        } else {
-          time += burstLeft;
-          remainingBurst[currentIndex] = 0;
-          completed++;
-        }
-
-        ganttChart.push({
-          process: data.process[currentIndex],
-          start: startTime,
-          end: time,
-        });
-      }
-
-      currentIndex = (currentIndex + 1) % n; 
-    }
-
-    
-    for (let i = 0; i < n; i++) {
-      let processBursts = ganttChart.filter(
-        (g) => g.process === data.process[i]
-      );
-
-    
-      let completionTime = processBursts[processBursts.length - 1].end;
-      turnaroundTime[i] = completionTime - 0; 
-      waitingTime[i] = turnaroundTime[i] - data.burst[i];
-    }
-
-    const newResult = {
-      burst: data.burst,
-      waitingTime,
-      turnaroundTime,
-      ganttChart,
-    };
-
-    setResults(newResult);
-    setShowGantt(false);
-    setShowProcessTable(false);
-  };
-
-  const calculatePreemptiveSRJN = (data) => {
-    const n = data.process.length;
-    const arrivalTime = data.arrival;
-    const burstTime = data.burst;
-    let remainingBurst = [...burstTime];
-
-    let waitingTime = Array(n).fill(0); 
-    let turnaroundTime = Array(n).fill(0); 
-    let completionTime = Array(n).fill(0); 
-    let ganttChart = []; 
-    let currentTime = 0; 
-    let completed = 0; 
-    let shortest = -1; 
-    let minBurst = Infinity; 
-    let isProcessRunning = false; 
-
-    while (completed !== n) {
-     
-      for (let i = 0; i < n; i++) {
-        if (
-          arrivalTime[i] <= currentTime &&
-          remainingBurst[i] < minBurst &&
-          remainingBurst[i] > 0
-        ) {
-          minBurst = remainingBurst[i];
-          shortest = i;
-          isProcessRunning = true;
-        }
-      }
-
-   
-      if (!isProcessRunning) {
-        currentTime++;
+      if (!ready.length) {
+        currentTime = Math.min(
+          ...processes.filter((proc) => !proc.done).map((proc) => proc.arrival)
+        );
         continue;
       }
 
-      
-      remainingBurst[shortest]--;
-      minBurst = remainingBurst[shortest]; 
-      if (minBurst === 0) minBurst = Infinity;
+      ready.sort(
+        (a, b) => a.burst - b.burst || a.arrival - b.arrival || a.process - b.process
+      );
 
-   
-      ganttChart.push({
-        process: shortest + 1, 
-        start: currentTime,
-        end: currentTime + 1,
-      });
+      const selected = ready[0];
+      const start = currentTime;
+      const end = start + selected.burst;
 
-   
-      currentTime++;
+      selected.completionTime = end;
+      selected.done = true;
+      completed += 1;
+      currentTime = end;
 
-      
-      if (remainingBurst[shortest] === 0) {
-        completed++;
-        isProcessRunning = false;
-        completionTime[shortest] = currentTime;
-        turnaroundTime[shortest] =
-          completionTime[shortest] - arrivalTime[shortest];
-        waitingTime[shortest] = turnaroundTime[shortest] - burstTime[shortest];
+      ganttChart.push({ process: selected.process, start, end });
+    }
+
+    applyResult(buildResult(processes, ganttChart));
+  };
+
+  const calculatePriority = (inputData) => {
+    const processes = mapInput(inputData).map((proc) => ({ ...proc, done: false }));
+    const ganttChart = [];
+    let completed = 0;
+    let currentTime = Math.min(...processes.map((proc) => proc.arrival));
+
+    while (completed < processes.length) {
+      const timeCursor = currentTime;
+      const ready = processes.filter((proc) => !proc.done && proc.arrival <= timeCursor);
+
+      if (!ready.length) {
+        currentTime = Math.min(
+          ...processes.filter((proc) => !proc.done).map((proc) => proc.arrival)
+        );
+        continue;
+      }
+
+      ready.sort(
+        (a, b) =>
+          a.priority - b.priority || a.arrival - b.arrival || a.process - b.process
+      );
+
+      const selected = ready[0];
+      const start = currentTime;
+      const end = start + selected.burst;
+
+      selected.completionTime = end;
+      selected.done = true;
+      completed += 1;
+      currentTime = end;
+
+      ganttChart.push({ process: selected.process, start, end });
+    }
+
+    applyResult(buildResult(processes, ganttChart));
+  };
+
+  const calculateRoundRobin = (inputData, quantum) => {
+    const q = Math.max(1, Number(quantum) || 1);
+    const processes = mapInput(inputData).map((proc) => ({ ...proc, remaining: proc.burst }));
+
+    const byArrival = [...processes].sort(
+      (a, b) => a.arrival - b.arrival || a.process - b.process
+    );
+    const ganttChart = [];
+    const queue = [];
+
+    let currentTime = byArrival[0]?.arrival ?? 0;
+    let nextArrival = 0;
+    let completed = 0;
+
+    while (completed < processes.length) {
+      while (nextArrival < byArrival.length && byArrival[nextArrival].arrival <= currentTime) {
+        queue.push(byArrival[nextArrival]);
+        nextArrival += 1;
+      }
+
+      if (!queue.length) {
+        currentTime = byArrival[nextArrival].arrival;
+        continue;
+      }
+
+      const current = queue.shift();
+      const start = currentTime;
+      const slice = Math.min(q, current.remaining);
+
+      current.remaining -= slice;
+      currentTime += slice;
+      ganttChart.push({ process: current.process, start, end: currentTime });
+
+      while (nextArrival < byArrival.length && byArrival[nextArrival].arrival <= currentTime) {
+        queue.push(byArrival[nextArrival]);
+        nextArrival += 1;
+      }
+
+      if (current.remaining > 0) {
+        queue.push(current);
+      } else {
+        current.completionTime = currentTime;
+        completed += 1;
       }
     }
 
-  
-    const newResult = {
-      burst: burstTime,
-      waitingTime,
-      turnaroundTime,
-      ganttChart,
-      completionTime, 
-      arrival: arrivalTime,
-    };
-
-    setResults(newResult);
-    setShowGantt(false);
-    setShowProcessTableSRJN(false);
+    applyResult(buildResult(processes, ganttChart));
   };
+
+  const calculatePreemptiveSRTN = (inputData) => {
+    const processes = mapInput(inputData).map((proc) => ({ ...proc, remaining: proc.burst }));
+    const ganttChart = [];
+
+    let completed = 0;
+    let currentTime = Math.min(...processes.map((proc) => proc.arrival));
+
+    while (completed < processes.length) {
+      const timeCursor = currentTime;
+      const ready = processes.filter(
+        (proc) => proc.arrival <= timeCursor && proc.remaining > 0
+      );
+
+      if (!ready.length) {
+        currentTime += 1;
+        continue;
+      }
+
+      ready.sort(
+        (a, b) =>
+          a.remaining - b.remaining || a.arrival - b.arrival || a.process - b.process
+      );
+
+      const running = ready[0];
+      const last = ganttChart[ganttChart.length - 1];
+
+      if (last && last.process === running.process) {
+        last.end += 1;
+      } else {
+        ganttChart.push({ process: running.process, start: currentTime, end: currentTime + 1 });
+      }
+
+      running.remaining -= 1;
+      currentTime += 1;
+
+      if (running.remaining === 0) {
+        running.completionTime = currentTime;
+        completed += 1;
+      }
+    }
+
+    applyResult(buildResult(processes, ganttChart));
+  };
+
   function refresh() {
     setData([]);
     setIsOpen(false);
     setResults({});
     setShowGantt(false);
     setShowProcessTable(false);
-    setShowProcessTableSRJN(false);
+    setComplete(false);
   }
+
   useEffect(() => {
-    
-    const timer = setTimeout(() => {
-      setLoading(false); 
-    }, 4000);
-    const fadeInTimer = setTimeout(() => {
-      setFadeOut(true); 
-    }, 3100); 
+    const fadeTimer = setTimeout(() => {
+      setFadeOut(true);
+    }, 1600);
+
+    const loadTimer = setTimeout(() => {
+      setLoading(false);
+    }, 2300);
 
     return () => {
-      clearTimeout(timer);
-      clearTimeout(fadeInTimer);
-    }; 
+      clearTimeout(fadeTimer);
+      clearTimeout(loadTimer);
+    };
   }, []);
 
   useEffect(() => {
-    if (results.length > 0) {
+    if (results.ganttChart?.length) {
       setShowGantt(true);
     }
   }, [results]);
 
   useEffect(() => {
-    if (showGantt && results.ganttChart && results.ganttChart.length > 0) {
-      setTimeout(() => {
+    if (showGantt && results.ganttChart?.length) {
+      const timer = setTimeout(() => {
         setShowProcessTable(true);
-        setShowProcessTableSRJN(true);
-      }, results.ganttChart.length * 900);
+      }, Math.max(1200, results.ganttChart.length * 450));
+
+      return () => clearTimeout(timer);
     }
   }, [showGantt, results.ganttChart]);
 
@@ -336,9 +310,7 @@ export default function App() {
         <div>
           <section className="my-4">
             <center>
-              <h1 className="display-4 header">
-                SCHEDULING ALGORITHM SIMULATOR🧮
-              </h1>
+              <h1 className="display-4 header">SCHEDULING ALGORITHM SIMULATOR</h1>
             </center>
           </section>
 
@@ -351,25 +323,23 @@ export default function App() {
               onCalculateSJF={calculateSJF}
               onCalculatePriority={calculatePriority}
               onCalculateRoundRobin={calculateRoundRobin}
-              onCalculatePreemptiveSRJN={calculatePreemptiveSRJN}
+              onCalculatePreemptiveSRTN={calculatePreemptiveSRTN}
               stratergy={stratergy}
               setStratergy={setStratergy}
               onRefresh={refresh}
             />
           </div>
 
-          {/* Table Section with container and margin */}
           <div className="container-lg my-4">
             <Table
               chartRef={chartRef}
               data={data}
-              stratergy={stratergy}
+              strategy={stratergy}
               isOpen={isOpen}
               onComplete={() => setShowGantt(true)}
             />
           </div>
 
-          {/* Gantt Chart Section with conditional rendering */}
           {showGantt && (
             <div className="container-lg my-4">
               <GanttChart
@@ -381,52 +351,20 @@ export default function App() {
             </div>
           )}
 
-          {/* Conditional rendering for Process Table and Average Time */}
-          {stratergy === 5
-            ? showProcessTableSRJN && (
-                <div className="container-lg my-4 " style={{marginBottom: '50px'}}>
-                  <SRJNProcessTable
-                    chartRef={chartRef}
-                    results={results}
-                    complete={complete}
-                    onComplete={setComplete}
-                    isOpen={showProcessTableSRJN}
-                  />
-
-                  <AverageTime
-                    results={results}
-                    chartRef={chartRef}
-                    complete={complete}
-                   
-
-                  />
-                </div>
-              )
-            : showProcessTable && (
-                <div className="container-lg my-4" >
-                  <ProcessTable
-                    chartRef={chartRef}
-                    results={results}
-                    isOpen={showProcessTable}
-                    complete={complete}
-                    onComplete={setComplete}
-                  />
-                  <AverageTime
-                    results={results}
-                    chartRef={chartRef}
-                    complete={complete}
-                    
-                  />
-                </div>
-              )}
+          {showProcessTable && (
+            <div className="container-lg my-4" style={{ marginBottom: "50px" }}>
+              <ProcessTable
+                chartRef={chartRef}
+                results={results}
+                isOpen={showProcessTable}
+                complete={complete}
+                onComplete={setComplete}
+              />
+              <AverageTime results={results} chartRef={chartRef} complete={complete} />
+            </div>
+          )}
         </div>
       )}
     </>
   );
 }
-
-
-
-
-
-

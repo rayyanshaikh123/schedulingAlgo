@@ -40,7 +40,7 @@ export default function AverageTime({ results, complete, chartRef }) {
           <div className="average-time-container" style={{marginBottom:'30px' }} ref={chartRef}>
             <h4
               className="mb-4 head"
-              style={{ textAlign: "center", color: "#493628" }}
+              style={{ textAlign: "center" }}
             >
               Average Times
             </h4>
@@ -50,10 +50,8 @@ export default function AverageTime({ results, complete, chartRef }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 2 }}
               style={{
-                backgroundColor: "#493628",
                 boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
                 borderRadius: "10px",
-                color: "#fff",
               }}
             >
               <div
@@ -66,7 +64,7 @@ export default function AverageTime({ results, complete, chartRef }) {
                 <span>AVG WAITING TIME</span>
                 <span
                   className="head"
-                  style={{ fontWeight: "bold", color: "#fff" }}
+                  style={{ fontWeight: "bold" }}
                 >
                   {averageWaitingTime.toFixed(2)}
                 </span>
@@ -82,7 +80,7 @@ export default function AverageTime({ results, complete, chartRef }) {
                 <span>AVG TURNAROUND TIME</span>
                 <span
                   className="head"
-                  style={{ fontWeight: "bold", color: "#fff" }}
+                  style={{ fontWeight: "bold" }}
                 >
                   {averageTurnaroundTime.toFixed(2)}
                 </span>

@@ -1,18 +1,34 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 
+const PASTEL_PALETTE = [
+  "#ffd6e0",
+  "#ffe5c4",
+  "#fff1b8",
+  "#d8f3dc",
+  "#cde7ff",
+  "#e9d5ff",
+  "#b8f2e6",
+  "#ffc9de",
+  "#e7f0b8",
+  "#f5d0fe",
+];
+
 export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
   const [colorMap, setColorMap] = useState({});
 
 
   useEffect(() => {
-    const uniqueProcesses = Array.from(new Set(results.ganttChart.map(item => item.process)));
-    
+    const uniqueProcesses = Array.from(
+      new Set((results.ganttChart || []).map((item) => item.process))
+    );
+
     const generatedColors = uniqueProcesses.reduce((acc, process) => {
-      const n1 = Math.ceil(Math.random() * 255);
-      const n2 = Math.ceil(Math.random() * 255);
-      const n3 = Math.ceil(Math.random() * 255);
-      acc[process] = `rgb(${n1},${n2},${n3})`;
+      const numericProcess = Number(process);
+      const paletteIndex = Number.isNaN(numericProcess)
+        ? 0
+        : (numericProcess - 1) % PASTEL_PALETTE.length;
+      acc[process] = PASTEL_PALETTE[paletteIndex];
       return acc;
     }, {});
 
@@ -32,10 +48,10 @@ export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
           <h4 className="mb-4 head" style={{ fontSize: "24px", textAlign: "center" }}>
             Gantt Chart
           </h4>
-          <div style={{ overflowX: "auto", marginBottom: '30px' }} ref={chartRef}>
+          <div className="table-wrap" ref={chartRef}>
            
             <table
-              className="table table-bordered"
+              className="table table-bordered scheduler-table"
               style={{
                 width: "100%",
                 borderCollapse: "collapse",
@@ -54,7 +70,7 @@ export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
                       transition={{ duration: 0.8, delay: index * 0.8 }}
                       onAnimationComplete={() => {
                         if (index === results.ganttChart.length - 1) {
-                          setTimeout(onComplete, 10000);
+                          setTimeout(onComplete, 600);
                         }
                       }}
                       style={{
@@ -65,7 +81,8 @@ export default function GanttChart({ results, onComplete, chartRef, isOpen }) {
                         borderRadius: "4px",
                         fontSize: "18px",
                         fontWeight: "500",
-                        backgroundColor: colorMap[item.process],  
+                        color: "#2d2040",
+                        backgroundColor: colorMap[item.process],
                       }}
                     >
                       <sup
