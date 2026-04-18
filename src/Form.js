@@ -64,11 +64,32 @@ export default function Form({
       );
     };
 
-    function handleClick(e) {
-      e.preventDefault();
+    const runCalculation = (activeStrategy, newData, quantumValue = quantum) => {
+      switch (activeStrategy) {
+        case 1:
+          onCalculateFCFS(newData);
+          break;
+        case 2:
+          onCalculateSJF(newData);
+          break;
+        case 3:
+          onCalculatePriority(newData);
+          break;
+        case 4:
+          onCalculateRoundRobin(newData, quantumValue);
+          break;
+        case 5:
+          onCalculatePreemptiveSRTN(newData);
+          break;
+        default:
+          onCalculateFCFS(newData);
+          break;
+      }
+    };
 
+    const calculateWithCurrentInputs = (activeStrategy, quantumValue = quantum) => {
       if (!processCount || processCount < 1) {
-        return;
+        return false;
       }
 
       const newBurst = Array.from({ length: processCount }, (_, i) =>
@@ -84,54 +105,34 @@ export default function Form({
       const hasInvalidBurst = newBurst.some((value) => Number.isNaN(value) || value <= 0);
       const hasInvalidArrival = newArrival.some((value) => Number.isNaN(value) || value < 0);
       const hasInvalidPriority =
-        stratergy === 3 &&
+        activeStrategy === 3 &&
         newPriority.some((value) => Number.isNaN(value) || value <= 0);
+      const hasInvalidQuantum =
+        activeStrategy === 4 &&
+        (Number.isNaN(Number(quantumValue)) || Number(quantumValue) < 1);
 
-      if (hasInvalidBurst || hasInvalidArrival || hasInvalidPriority) {
-        return;
+      if (hasInvalidBurst || hasInvalidArrival || hasInvalidPriority || hasInvalidQuantum) {
+        return false;
       }
-  
+
       const processArray = Array.from({ length: processCount }, (_, i) => i + 1);
-  
       const newData = {
         process: processArray,
         burst: newBurst,
         arrival: newArrival,
         priority: newPriority,
       };
-  
+
       onData(newData);
-  
-      switch (stratergy) {
-        case 1:
-          onCalculateFCFS(newData);
-          break;
-        case 2:
-          onCalculateSJF(newData);
-          break;
-        case 3:
-          onCalculatePriority(newData);
-          break;
-        case 4:
-          onCalculateRoundRobin(newData, quantum);
-          break;
-        case 5:
-          onCalculatePreemptiveSRTN(newData);
-          break;
-        default:
-          onCalculateFCFS(newData);
-          break;
-      }
-  
-      setBurst([]);
-      setArrival([]);
-      setPriority([]);
-      setBulkBurst("");
-      setBulkArrival("");
-      setBulkPriority("");
-      setQuantum(null);
-  
+      runCalculation(activeStrategy, newData, quantumValue);
       onOpen(true);
+      return true;
+    };
+
+    function handleClick(e) {
+      e.preventDefault();
+
+      calculateWithCurrentInputs(stratergy);
     }
   
     return (
@@ -150,10 +151,15 @@ export default function Form({
               id="ty"
               className="form-select"
               onChange={(e) => {
-                setStratergy(Number(e.target.value));
-                onRefresh();
+                const nextStrategy = Number(e.target.value);
+                setStratergy(nextStrategy);
+
+                const didCalculate = calculateWithCurrentInputs(nextStrategy);
+                if (!didCalculate) {
+                  onRefresh();
+                }
               }}
-              defaultValue={stratergy}
+              value={stratergy}
             >
               <option value="1">First Come First Serve</option>
               <option value="2">Shortest Job First</option>
@@ -211,7 +217,17 @@ export default function Form({
                 type="number"
                 value={quantum}
                 min={1}
-                onChange={(e) => setQuantum(Number(e.target.value))}
+                onChange={(e) => {
+                  const nextQuantum = Number(e.target.value);
+                  setQuantum(nextQuantum);
+
+                  if (stratergy === 4) {
+                    const didCalculate = calculateWithCurrentInputs(4, nextQuantum);
+                    if (!didCalculate) {
+                      onRefresh();
+                    }
+                  }
+                }}
                 className="form-control"
                 required
               />
